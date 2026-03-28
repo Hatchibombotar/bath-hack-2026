@@ -25,7 +25,7 @@ const (
 )
 
 type Game struct {
-	msgCh  chan string
+	msgCh  chan []byte
 	sendCh chan []byte
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -49,6 +49,7 @@ func (g *Game) Update() error {
 	case m := <-g.msgCh:
 		// handle message: update game state based on m
 		log.Printf("client got ws message: %s", m)
+		g.HandleMessage(m)
 	default:
 		// no message this frame
 	}
@@ -129,7 +130,7 @@ func (g *Game) ScreenSize() (int, int) {
 
 func main() {
 	// channel to receive text messages from websocket reader
-	msgCh := make(chan string, 64)
+	msgCh := make(chan []byte, 64)
 	sendCh := make(chan []byte, 8)
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -173,7 +174,7 @@ func main() {
 	// allow graceful shutdown
 	time.Sleep(200 * time.Millisecond)
 }
-func runWebSocketClient(ctx context.Context, rawURL string, msgCh chan<- string, sendCh <-chan []byte, g *Game) {
+func runWebSocketClient(ctx context.Context, rawURL string, msgCh chan<- []byte, sendCh <-chan []byte, g *Game) {
 	u, _ := url.Parse(rawURL)
 	dialer := websocket.DefaultDialer
 	conn, _, err := dialer.Dial(u.String(), nil)
@@ -205,7 +206,7 @@ func runWebSocketClient(ctx context.Context, rawURL string, msgCh chan<- string,
 			}
 			if mt == websocket.TextMessage {
 				select {
-				case msgCh <- string(msg):
+				case msgCh <- msg:
 				default:
 				}
 			}

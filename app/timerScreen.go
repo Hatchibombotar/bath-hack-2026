@@ -9,7 +9,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
-var speechBubble *ebiten.Image = LoadImageFromPath("assets/speech_bubble.png")
+var speechBubble *ebiten.Image = LoadImageFromPath("assets/speech_bubble_small.png")
 var plusSymbol *ebiten.Image = LoadImageFromPath("assets/plus.png")
 var minusSymbol *ebiten.Image = LoadImageFromPath("assets/minus.png")
 var inputBox *ebiten.Image = LoadImageFromPath("assets/input_box_full.png")
@@ -39,13 +39,18 @@ func UpdateUIScreen(g *Game) {
 }
 
 func drawUiScreen(g *Game, screen *ebiten.Image) {
-	offsetX, offsetY := screen.Bounds().Size().X-200, 100
+	offsetX, offsetY := screen.Bounds().Size().X-200, 200
+
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Scale(float64(duckScale), float64(duckScale))
+	op.GeoM.Translate(float64(offsetX-42), float64(offsetY)-48)
+	screen.DrawImage(speechBubble, op)
 
 	minusButton.X = offsetX
 	minusButton.Y = offsetY
 	minusButton.Draw(screen)
 
-	plusButton.X = offsetX + 100
+	plusButton.X = offsetX + 96
 	plusButton.Y = offsetY
 	plusButton.Draw(screen)
 
@@ -61,7 +66,7 @@ func drawUiScreen(g *Game, screen *ebiten.Image) {
 
 	// textWidth, _ := text.Measure(content, scoreText, 1)
 
-	op := &ebiten.DrawImageOptions{}
+	op = &ebiten.DrawImageOptions{}
 	op.GeoM.Scale(float64(duckScale), float64(duckScale))
 	op.GeoM.Translate(float64(offsetX+(minusSymbol.Bounds().Dx())+26), float64(offsetY)-3)
 	screen.DrawImage(inputBox, op)
