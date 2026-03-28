@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"image/color"
+	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -12,6 +13,7 @@ import (
 var speechBubble *ebiten.Image = LoadImageFromPath("assets/speech_bubble_small.png")
 var plusSymbol *ebiten.Image = LoadImageFromPath("assets/plus.png")
 var minusSymbol *ebiten.Image = LoadImageFromPath("assets/minus.png")
+var playSymbol *ebiten.Image = LoadImageFromPath("assets/play_button.png")
 var inputBox *ebiten.Image = LoadImageFromPath("assets/input_box_full.png")
 
 var minusButton *Button = &Button{
@@ -22,9 +24,13 @@ var plusButton *Button = &Button{
 	Image: plusSymbol,
 	Scale: duckScale,
 }
+var playButton *Button = &Button{
+	Image: playSymbol,
+	Scale: duckScale,
+}
 
 func UpdateUIScreen(g *Game) {
-	if minusButton.IsHovered(g) || plusButton.IsHovered(g) {
+	if minusButton.IsHovered(g) || plusButton.IsHovered(g) || playButton.IsHovered(g) {
 		g.hasHover = true
 	}
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButton0) {
@@ -35,6 +41,14 @@ func UpdateUIScreen(g *Game) {
 		if minusButton.IsHovered(g) {
 			g.timerLength -= 5
 		}
+
+		g.timerLength = int(math.Max(5, float64(g.timerLength)))
+		g.timerLength = int(math.Min(95, float64(g.timerLength)))
+	}
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButton0) {
+		if playButton.IsHovered(g) {
+			fmt.Println("eek")
+		}
 	}
 }
 
@@ -43,7 +57,7 @@ func drawUiScreen(g *Game, screen *ebiten.Image) {
 
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Scale(float64(duckScale), float64(duckScale))
-	op.GeoM.Translate(float64(offsetX-42), float64(offsetY)-48)
+	op.GeoM.Translate(float64(offsetX-42), float64(offsetY)-42)
 	screen.DrawImage(speechBubble, op)
 
 	minusButton.X = offsetX
@@ -53,6 +67,10 @@ func drawUiScreen(g *Game, screen *ebiten.Image) {
 	plusButton.X = offsetX + 96
 	plusButton.Y = offsetY
 	plusButton.Draw(screen)
+
+	playButton.X = offsetX + 46
+	playButton.Y = offsetY + 36
+	playButton.Draw(screen)
 
 	scoreText := &text.GoTextFace{
 		Source: fontFaceSource,
