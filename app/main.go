@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"image/color"
 	"log"
 	"net/url"
@@ -10,15 +9,19 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 var pixelScale = 1
 var duckScale = 3
 var duckWidth = 22
 
-// Game holds game state and a channel for incoming WS messages.
+type ServerState int
+
+const (
+	WaitingToStart ServerState = iota
+	StateRetrying
+)
+
 type Game struct {
 	msgCh  chan string
 	ctx    context.Context
@@ -27,9 +30,12 @@ type Game struct {
 	duck             *Duck
 	cursorX, cursorY int
 	hasHover         bool
-	isActionUiOpen   bool
-	actionUI         *ActionUI
-	frame            int
+	// isActionUiOpen   bool
+	// actionUI         *ActionUI
+	frame int
+
+	isStartingUIOpen bool
+	timerLength      int
 }
 
 // Update processes incoming websocket messages (non-blocking).
@@ -37,7 +43,7 @@ func (g *Game) Update() error {
 	select {
 	case m := <-g.msgCh:
 		// handle message: update game state based on m
-		log.Printf("got ws message: %s", m)
+		log.Printf("client got ws message: %s", m)
 	default:
 		// no message this frame
 	}
@@ -46,29 +52,31 @@ func (g *Game) Update() error {
 	g.cursorX, g.cursorY = ebiten.CursorPosition()
 	g.hasHover = false
 
+	UpdateUIScreen(g)
 	g.duck.Update()
-	if !g.isActionUiOpen {
-		g.duck.Move()
-	}
+	g.duck.Move()
 
-	if g.duck.isHovered {
-		g.hasHover = true
-		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButton2) {
-			fmt.Println("Quack")
-			g.isActionUiOpen = true
+	// if !g.isActionUiOpen {
+	// }
 
-			actionUI := &ActionUI{}
-			actionUI.X = g.duck.X + 20
-			actionUI.Y = g.duck.Y - 30
-			actionUI.Make()
+	// if g.duck.isHovered {
+	// 	g.hasHover = true
+	// 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButton2) {
+	// 		fmt.Println("Quack")
+	// 		g.isActionUiOpen = true
 
-			g.actionUI = actionUI
-		}
-	}
+	// 		actionUI := &ActionUI{}
+	// 		actionUI.X = g.duck.X + 20
+	// 		actionUI.Y = g.duck.Y - 30
+	// 		actionUI.Make()
 
-	if g.actionUI != nil {
-		g.actionUI.Update(g)
-	}
+	// 		g.actionUI = actionUI
+	// 	}
+	// }
+
+	// if g.actionUI != nil {
+	// 	g.actionUI.Update(g)
+	// }
 
 	if g.hasHover {
 		ebiten.SetWindowMousePassthrough(false)
@@ -82,20 +90,20 @@ func (g *Game) Update() error {
 
 // Draw renders a simple message count for demonstration.
 func (g *Game) Draw(screen *ebiten.Image) {
-	ebitenutil.DebugPrint(screen, "WebSocket messages received (check logs)")
 	if ebiten.IsKeyPressed(ebiten.KeySpace) {
 		screen.Fill(color.RGBA{255, 255, 255, 10})
 	}
 	g.duck.Draw(screen)
-	ebitenutil.DebugPrint(screen, "Hello, World!")
 
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Scale(float64(duckScale), float64(duckScale))
 	op.GeoM.Translate(100, 100)
 
-	if g.isActionUiOpen {
-		g.actionUI.Draw(screen)
-	}
+	// op = &ebiten.DrawImageOptions{}
+	// op.GeoM.Translate(float64(screen.Bounds().Dx())-float64(speechBubble.Bounds().Dx()), float64(screen.Bounds().Dy())-float64(speechBubble.Bounds().Dx()))
+	// screen.DrawImage(speechBubble, op)
+
+	drawUiScreen(g, screen)
 }
 
 // Layout returns the screen size.
@@ -112,12 +120,16 @@ func (g *Game) ScreenSize() (int, int) {
 func main() {
 	// channel to receive text messages from websocket reader
 	msgCh := make(chan string, 64)
+	sendCh := make(chan string, 8)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	game := &Game{msgCh: msgCh, ctx: ctx, cancel: cancel}
 
+	game.timerLength = 60
+	game.isStartingUIOpen = true
+
 	// start websocket client goroutine
-	go runWebSocketClient(ctx, "ws://localhost:8080/", msgCh)
+	go runWebSocketClient(ctx, "ws://localhost:8080/", msgCh, sendCh)
 
 	// start ebiten main loop
 
@@ -151,9 +163,7 @@ func main() {
 	// allow graceful shutdown
 	time.Sleep(200 * time.Millisecond)
 }
-
-// runWebSocketClient connects and reads messages, forwarding text messages to msgCh.
-func runWebSocketClient(ctx context.Context, rawURL string, msgCh chan<- string) {
+func runWebSocketClient(ctx context.Context, rawURL string, msgCh chan<- string, sendCh <-chan string) {
 	u, _ := url.Parse(rawURL)
 	dialer := websocket.DefaultDialer
 	conn, _, err := dialer.Dial(u.String(), nil)
@@ -163,7 +173,6 @@ func runWebSocketClient(ctx context.Context, rawURL string, msgCh chan<- string)
 	}
 	defer conn.Close()
 
-	// ensure read deadlines and pong handler if desired
 	conn.SetReadLimit(1024 * 1024)
 	_ = conn.SetReadDeadline(time.Now().Add(60 * time.Second))
 	conn.SetPongHandler(func(string) error {
@@ -171,12 +180,10 @@ func runWebSocketClient(ctx context.Context, rawURL string, msgCh chan<- string)
 		return nil
 	})
 
-	// writer: periodic ping
 	pingTicker := time.NewTicker(10 * time.Second)
 	defer pingTicker.Stop()
 
 	readDone := make(chan struct{})
-	// reader goroutine
 	go func() {
 		defer close(readDone)
 		for {
@@ -189,21 +196,15 @@ func runWebSocketClient(ctx context.Context, rawURL string, msgCh chan<- string)
 				select {
 				case msgCh <- string(msg):
 				default:
-					// drop if channel full
 				}
-			} else {
-				// handle other types if needed
 			}
 		}
 	}()
 
-	// main loop: send pings and watch for context cancel
 	for {
 		select {
 		case <-ctx.Done():
-			// close connection gracefully
 			_ = conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "bye"))
-			// wait for reader to finish
 			select {
 			case <-readDone:
 			case <-time.After(1 * time.Second):
@@ -211,6 +212,12 @@ func runWebSocketClient(ctx context.Context, rawURL string, msgCh chan<- string)
 			return
 		case <-pingTicker.C:
 			_ = conn.WriteMessage(websocket.PingMessage, nil)
+		case m := <-sendCh:
+			// send text message; handle write errors
+			if err := conn.WriteMessage(websocket.TextMessage, []byte(m)); err != nil {
+				log.Printf("ws write error: %v", err)
+				return
+			}
 		}
 	}
 }

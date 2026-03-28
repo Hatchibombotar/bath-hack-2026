@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -24,6 +25,16 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 
 	player := &Player{
 		Conn: conn,
+	}
+
+	message, err := json.Marshal(&GenericAction{Action: "blah blah"})
+	if err != nil {
+		panic(err)
+	}
+
+	err = player.Conn.WriteMessage(websocket.TextMessage, message)
+	if err != nil {
+		panic(err)
 	}
 
 	for {

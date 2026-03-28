@@ -15,14 +15,20 @@ type ActionUI struct {
 var actionButtonSprite *ebiten.Image = LoadImageFromPath("assets/test_button.png")
 
 func (ui *ActionUI) Make() {
-	actionButton := &Button{
+	actionButton0 := &Button{
 		Image: actionButtonSprite,
 		Scale: duckScale,
-		X:     ui.X,
+		X:     ui.X - 50,
 		Y:     ui.Y,
 	}
+	// actionButton1 := &Button{
+	// 	Image: actionButtonSprite,
+	// 	Scale: duckScale,
+	// 	X:     ui.X,
+	// 	Y:     ui.Y,
+	// }
 
-	ui.Button0 = actionButton
+	ui.Button0 = actionButton0
 }
 
 func (ui *ActionUI) Update(g *Game) {
