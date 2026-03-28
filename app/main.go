@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"image/color"
 	"log"
 	"net/url"
 	"time"
@@ -101,9 +100,9 @@ func (g *Game) Update() error {
 
 // Draw renders a simple message count for demonstration.
 func (g *Game) Draw(screen *ebiten.Image) {
-	if ebiten.IsKeyPressed(ebiten.KeySpace) {
-		screen.Fill(color.RGBA{255, 255, 255, 10})
-	}
+	// if ebiten.IsKeyPressed(ebiten.KeySpace) {
+	// 	screen.Fill(color.RGBA{255, 255, 255, 10})
+	// }
 	g.duck.Draw(screen)
 
 	op := &ebiten.DrawImageOptions{}
