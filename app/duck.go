@@ -29,6 +29,8 @@ type Duck struct {
 func (duck *Duck) Init() {
 	duck.Assets = make(map[string]*ebiten.Image)
 	duck.Skins = []string{"duck_bathHack","duck_green"}
+	duck.Name = "big stan"
+	duck.NextSkin()
 }
 
 func (duck *Duck) NextSkin() {
