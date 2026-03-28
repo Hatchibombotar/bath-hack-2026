@@ -59,8 +59,9 @@ func (g *Game) Update() error {
 	// if !g.isActionUiOpen {
 	// }
 
-	// if g.duck.isHovered {
-	// 	g.hasHover = true
+	if g.duck.isHovered {
+		g.hasHover = true
+	}
 	// 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButton2) {
 	// 		fmt.Println("Quack")
 	// 		g.isActionUiOpen = true
