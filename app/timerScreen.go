@@ -39,7 +39,7 @@ func UpdateUIScreen(g *Game) {
 }
 
 func drawUiScreen(g *Game, screen *ebiten.Image) {
-	offsetX, offsetY := screen.Bounds().Size().X-200, screen.Bounds().Size().Y-200
+	offsetX, offsetY := screen.Bounds().Size().X-200, 200
 
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Scale(float64(duckScale), float64(duckScale))
