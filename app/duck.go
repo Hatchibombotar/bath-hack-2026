@@ -2,15 +2,16 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
-var duckImage *ebiten.Image = LoadImageFromPath("assets/duck.png")
-var duckWalkFlipbook *ebiten.Image = LoadImageFromPath("assets/duck_walk.png")
-var duckSittingImage *ebiten.Image = LoadImageFromPath("assets/duck_sitting.png")
-
 type Duck struct {
+	Skin   string
+	Assets map[string]*ebiten.Image
+
 	X, Y             int
 	targetX, targetY int
 	Game             *Game
@@ -22,7 +23,29 @@ type Duck struct {
 	isFacingRight bool //true if facing right, false if left
 }
 
+func (duck *Duck) ChangeSkin(newSkin string) {
+	duck.Skin = newSkin
+	if duck.Assets == nil {
+		duck.Assets = make(map[string]*ebiten.Image)
+	}
+	duck.Assets["duck"] = LoadImageFromPath(fmt.Sprintf("assets/%s/duck.png", newSkin))
+	duck.Assets["duck_walk"] = LoadImageFromPath(fmt.Sprintf("assets/%s/duck_walk.png", newSkin))
+	duck.Assets["duck_sitting"] = LoadImageFromPath(fmt.Sprintf("assets/%s/duck_sitting.png", newSkin))
+}
+
 func (duck *Duck) Update() {
+	if duck.Skin == "" {
+		duck.ChangeSkin("duck_bathHack")
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
+		switch duck.Skin {
+		case "duck_bathHack":
+			duck.ChangeSkin("duck_green")
+		case "duck_green":
+			duck.ChangeSkin("duck_bathHack")
+		}
+	}
+
 	g := duck.Game
 
 	duck.isHovered = isPointInRect(
@@ -31,6 +54,7 @@ func (duck *Duck) Update() {
 		duckWidth*duckScale,
 		duckWidth*duckScale,
 	)
+	duck.isFacingRight = (duck.targetX - duck.X) < 0
 
 	if !duck.isHeld {
 		if duck.isHovered && ebiten.IsMouseButtonPressed(ebiten.MouseButton0) {
@@ -39,8 +63,6 @@ func (duck *Duck) Update() {
 	} else {
 		duck.isHeld = ebiten.IsMouseButtonPressed(ebiten.MouseButton0)
 	}
-
-	duck.isFacingRight = (duck.targetX - duck.X) < 0 
 }
 
 func (duck *Duck) Move() {
@@ -69,21 +91,20 @@ func (duck *Duck) Draw(screen *ebiten.Image) {
 		op.GeoM.Scale(float64(duckScale), float64(duckScale))
 	} else {
 		op.GeoM.Scale(-1, 1)
-		op.GeoM.Translate(float64(duckImage.Bounds().Size().X), 0)
+		op.GeoM.Translate(float64(duck.Assets["duck"].Bounds().Size().X), 0)
 		op.GeoM.Scale(float64(duckScale), float64(duckScale))
 	}
 	op.GeoM.Translate(float64(duck.X), float64(duck.Y))
 
 	// screen.DrawImage(duckImage, op)
-	fmt.Println(duck.isWalking)
+	//fmt.Println(duck.isWalking)
 	if duck.isWalking {
-		DrawSpriteFrame(screen, duckWalkFlipbook, 30, 30, (duck.Game.frame/7)%4, op)
+		DrawSpriteFrame(screen, duck.Assets["duck_walking"], 30, 30, (duck.Game.frame/7)%4, op)
 	} else if duck.isHeld {
-		screen.DrawImage(duckImage, op)
+		screen.DrawImage(duck.Assets["duck"], op)
 	} else {
-		screen.DrawImage(duckSittingImage, op)
+		screen.DrawImage(duck.Assets["duck_sitting"], op)
 	}
-	
 
 	ebitenutil.DebugPrintAt(screen, "Stan Duck", duck.X, duck.Y-20)
 }
