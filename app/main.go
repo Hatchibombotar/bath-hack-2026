@@ -16,11 +16,13 @@ var pixelScale = 1
 var duckScale = 3
 var duckWidth = 22
 
+var nestSprite *ebiten.Image = LoadImageFromPath("assets/nest.png")
+
 type ServerState int
 
 const (
-	WaitingToStart ServerState = iota
-	StateRetrying
+	TimerSettingsState ServerState = iota
+	TimerOngoingState
 )
 
 type Game struct {
@@ -40,6 +42,8 @@ type Game struct {
 	timerLength      int
 
 	connectionFail bool
+
+	State ServerState
 }
 
 // Update processes incoming websocket messages (non-blocking).
@@ -57,7 +61,10 @@ func (g *Game) Update() error {
 	g.cursorX, g.cursorY = ebiten.CursorPosition()
 	g.hasHover = false
 
-	UpdateUIScreen(g)
+	if g.State == TimerSettingsState {
+		UpdateTimerOngoingUIScreen(g)
+	}
+
 	g.duck.Update()
 	g.duck.Move()
 
@@ -95,6 +102,7 @@ func (g *Game) Update() error {
 		ebiten.SetWindowMousePassthrough(true)
 		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
 	}
+
 	return nil
 }
 
@@ -107,13 +115,17 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Scale(float64(duckScale), float64(duckScale))
-	op.GeoM.Translate(100, 100)
+	op.GeoM.Translate(float64(screen.Bounds().Size().X)-float64(nestSprite.Bounds().Size().X), float64(screen.Bounds().Size().Y)-float64(nestSprite.Bounds().Size().Y))
+
+	screen.DrawImage(nestSprite, op)
 
 	// op = &ebiten.DrawImageOptions{}
 	// op.GeoM.Translate(float64(screen.Bounds().Dx())-float64(speechBubble.Bounds().Dx()), float64(screen.Bounds().Dy())-float64(speechBubble.Bounds().Dx()))
 	// screen.DrawImage(speechBubble, op)
 
-	drawUiScreen(g, screen)
+	if g.State == TimerSettingsState {
+		DrawTimerOngoingUiScreen(g, screen)
+	}
 }
 
 // Layout returns the screen size.
@@ -157,6 +169,8 @@ func main() {
 		X:    200,
 		Y:    200,
 	}
+
+	duck.Init()
 
 	game.duck = duck
 

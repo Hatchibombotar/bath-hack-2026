@@ -10,26 +10,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
-var speechBubble *ebiten.Image = LoadImageFromPath("assets/speech_bubble_small.png")
-var plusSymbol *ebiten.Image = LoadImageFromPath("assets/plus.png")
-var minusSymbol *ebiten.Image = LoadImageFromPath("assets/minus.png")
-var playSymbol *ebiten.Image = LoadImageFromPath("assets/play_button.png")
-var inputBox *ebiten.Image = LoadImageFromPath("assets/input_box_full.png")
-
-var minusButton *Button = &Button{
-	Image: minusSymbol,
-	Scale: duckScale,
-}
-var plusButton *Button = &Button{
-	Image: plusSymbol,
-	Scale: duckScale,
-}
-var playButton *Button = &Button{
-	Image: playSymbol,
-	Scale: duckScale,
-}
-
-func UpdateUIScreen(g *Game) {
+func UpdateTimerOngoingUIScreen(g *Game) {
 	if minusButton.IsHovered(g) || plusButton.IsHovered(g) || playButton.IsHovered(g) {
 		g.hasHover = true
 	}
@@ -47,12 +28,13 @@ func UpdateUIScreen(g *Game) {
 	}
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButton0) {
 		if playButton.IsHovered(g) {
+			g.State = TimerOngoingState
 			fmt.Println("eek")
 		}
 	}
 }
 
-func drawUiScreen(g *Game, screen *ebiten.Image) {
+func DrawTimerOngoingUiScreen(g *Game, screen *ebiten.Image) {
 	offsetX, offsetY := screen.Bounds().Size().X-200, 200
 
 	op := &ebiten.DrawImageOptions{}
