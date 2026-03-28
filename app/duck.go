@@ -9,7 +9,10 @@ import (
 )
 
 type Duck struct {
-	Skin   string
+	Name string
+
+	Skins  []string
+	Skin   int
 	Assets map[string]*ebiten.Image
 
 	X, Y             int
@@ -23,27 +26,32 @@ type Duck struct {
 	isFacingRight bool //true if facing right, false if left
 }
 
-func (duck *Duck) ChangeSkin(newSkin string) {
-	duck.Skin = newSkin
-	if duck.Assets == nil {
-		duck.Assets = make(map[string]*ebiten.Image)
-	}
+func (duck *Duck) Init() {
+	duck.Assets = make(map[string]*ebiten.Image)
+	duck.Skins = []string{"duck_bathHack","duck_green"}
+}
+
+func (duck *Duck) NextSkin() {
+	// if duck.Assets == nil {
+	// 	duck.Assets = make(map[string]*ebiten.Image)
+	// 	duck.Skins = []string{"duck_bathHack","duck_green"}
+	// }
+	duck.Skin += 1
+	duck.Skin = duck.Skin % len(duck.Skins)
+	newSkin := duck.Skins[duck.Skin]
+	
 	duck.Assets["duck"] = LoadImageFromPath(fmt.Sprintf("assets/%s/duck.png", newSkin))
 	duck.Assets["duck_walk"] = LoadImageFromPath(fmt.Sprintf("assets/%s/duck_walk.png", newSkin))
 	duck.Assets["duck_sitting"] = LoadImageFromPath(fmt.Sprintf("assets/%s/duck_sitting.png", newSkin))
 }
 
 func (duck *Duck) Update() {
-	if duck.Skin == "" {
-		duck.ChangeSkin("duck_bathHack")
-	}
+	duck.isWalking = true
+	// if duck.Skins == nil {
+	// 	duck.NextSkin()
+	// }
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
-		switch duck.Skin {
-		case "duck_bathHack":
-			duck.ChangeSkin("duck_green")
-		case "duck_green":
-			duck.ChangeSkin("duck_bathHack")
-		}
+		duck.NextSkin()
 	}
 
 	g := duck.Game
@@ -99,12 +107,12 @@ func (duck *Duck) Draw(screen *ebiten.Image) {
 	// screen.DrawImage(duckImage, op)
 	//fmt.Println(duck.isWalking)
 	if duck.isWalking {
-		DrawSpriteFrame(screen, duck.Assets["duck_walking"], 30, 30, (duck.Game.frame/7)%4, op)
+		DrawSpriteFrame(screen, duck.Assets["duck_walk"], 30, 30, (duck.Game.frame/7)%4, op)
 	} else if duck.isHeld {
 		screen.DrawImage(duck.Assets["duck"], op)
 	} else {
 		screen.DrawImage(duck.Assets["duck_sitting"], op)
 	}
 
-	ebitenutil.DebugPrintAt(screen, "Stan Duck", duck.X, duck.Y-20)
+	ebitenutil.DebugPrintAt(screen, duck.Name, duck.X, duck.Y-20)
 }
