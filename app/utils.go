@@ -41,3 +41,12 @@ func isPointInRect(px, py, rx, ry, rw, rh int) bool {
 	// check inclusive on left/top, exclusive on right/bottom
 	return px >= x0 && px < x1 && py >= y0 && py < y1
 }
+
+func DrawSpriteFrame(screen *ebiten.Image, spritesheet *ebiten.Image, frameWidth, frameHeight, frameIndex int, op *ebiten.DrawImageOptions) {
+	sx := frameIndex * frameWidth
+	sr := image.Rect(sx, 0, sx+frameWidth, frameHeight)
+
+	sub := spritesheet.SubImage(sr).(*ebiten.Image)
+
+	screen.DrawImage(sub, op)
+}

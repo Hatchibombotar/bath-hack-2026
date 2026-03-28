@@ -17,27 +17,49 @@ var duckWidth = 22
 type Game struct {
 	duck             *Duck
 	cursorX, cursorY int
-	isUiOpen         bool
+	hasHover         bool
+	isActionUiOpen   bool
+	actionUI         *ActionUI
+	frame            int
 }
 
 func (g *Game) Update() error {
+	g.frame += 1
 	g.cursorX, g.cursorY = ebiten.CursorPosition()
+	g.hasHover = false
+
 	g.duck.Update()
+	if !g.isActionUiOpen {
+		g.duck.Move()
+	}
 
 	if g.duck.isHovered {
-		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButton0) {
+		g.hasHover = true
+		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButton2) {
 			fmt.Println("Quack")
-		}
+			g.isActionUiOpen = true
 
-		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButton0) {
-			fmt.Println("Quack")
+			actionUI := &ActionUI{}
+			actionUI.X = g.duck.X + 20
+			actionUI.Y = g.duck.Y - 30
+			actionUI.Make()
+
+			g.actionUI = actionUI
 		}
+	}
+
+	if g.actionUI != nil {
+		g.actionUI.Update(g)
+	}
+
+	if g.hasHover {
 		ebiten.SetWindowMousePassthrough(false)
 		ebiten.SetCursorShape(ebiten.CursorShapePointer)
 	} else {
 		ebiten.SetWindowMousePassthrough(true)
 		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
 	}
+
 	return nil
 }
 
@@ -47,6 +69,14 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 	g.duck.Draw(screen)
 	ebitenutil.DebugPrint(screen, "Hello, World!")
+
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Scale(float64(duckScale), float64(duckScale))
+	op.GeoM.Translate(100, 100)
+
+	if g.isActionUiOpen {
+		g.actionUI.Draw(screen)
+	}
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
@@ -73,8 +103,8 @@ func main() {
 
 	duck := &Duck{
 		Game: game,
-		X:    100,
-		Y:    100,
+		X:    200,
+		Y:    200,
 	}
 
 	game.duck = duck
