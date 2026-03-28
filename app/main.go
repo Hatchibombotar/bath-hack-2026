@@ -25,6 +25,12 @@ const (
 	TimerOngoingState
 )
 
+type VisiblePlayerData struct {
+	DuckName  string `json:"duckname"`
+	DuckSkin  string `json:"duckskin"`
+	IsWorking bool   `json:"isworking"`
+}
+
 type Game struct {
 	msgCh  chan []byte
 	sendCh chan []byte
