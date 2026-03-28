@@ -6,15 +6,6 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type GenericAction struct {
-	Action string `json:"action"`
-}
-
-type MessageFriendAction struct {
-	Action  string `json:"action"`
-	Message string `json:"message"`
-}
-
 func handleMessage(player *Player, message []byte) error {
 	action := &GenericAction{}
 	err := json.Unmarshal(message, action)

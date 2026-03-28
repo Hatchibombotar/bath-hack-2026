@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"image/color"
 	"log"
 	"net/url"
@@ -24,6 +26,7 @@ const (
 
 type Game struct {
 	msgCh  chan string
+	sendCh chan []byte
 	ctx    context.Context
 	cancel context.CancelFunc
 
@@ -36,6 +39,8 @@ type Game struct {
 
 	isStartingUIOpen bool
 	timerLength      int
+
+	connectionFail bool
 }
 
 // Update processes incoming websocket messages (non-blocking).
@@ -56,11 +61,15 @@ func (g *Game) Update() error {
 	g.duck.Update()
 	g.duck.Move()
 
-	// if !g.isActionUiOpen {
-	// }
-
 	if g.duck.isHovered {
 		g.hasHover = true
+
+		message, err := json.Marshal(&GenericAction{Action: "blah blah"})
+		if err != nil {
+			panic(err)
+		}
+
+		g.SendMessage(message)
 	}
 	// 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButton2) {
 	// 		fmt.Println("Quack")
@@ -121,16 +130,16 @@ func (g *Game) ScreenSize() (int, int) {
 func main() {
 	// channel to receive text messages from websocket reader
 	msgCh := make(chan string, 64)
-	sendCh := make(chan string, 8)
+	sendCh := make(chan []byte, 8)
 
 	ctx, cancel := context.WithCancel(context.Background())
-	game := &Game{msgCh: msgCh, ctx: ctx, cancel: cancel}
+	game := &Game{msgCh: msgCh, ctx: ctx, cancel: cancel, sendCh: sendCh}
 
 	game.timerLength = 60
 	game.isStartingUIOpen = true
 
 	// start websocket client goroutine
-	go runWebSocketClient(ctx, "ws://localhost:8080/", msgCh, sendCh)
+	go runWebSocketClient(ctx, "ws://localhost:8080/", msgCh, sendCh, game)
 
 	// start ebiten main loop
 
@@ -164,11 +173,12 @@ func main() {
 	// allow graceful shutdown
 	time.Sleep(200 * time.Millisecond)
 }
-func runWebSocketClient(ctx context.Context, rawURL string, msgCh chan<- string, sendCh <-chan string) {
+func runWebSocketClient(ctx context.Context, rawURL string, msgCh chan<- string, sendCh <-chan []byte, g *Game) {
 	u, _ := url.Parse(rawURL)
 	dialer := websocket.DefaultDialer
 	conn, _, err := dialer.Dial(u.String(), nil)
 	if err != nil {
+		g.connectionFail = true
 		log.Printf("ws dial error: %v", err)
 		return
 	}
@@ -216,8 +226,10 @@ func runWebSocketClient(ctx context.Context, rawURL string, msgCh chan<- string,
 		case m := <-sendCh:
 			// send text message; handle write errors
 			if err := conn.WriteMessage(websocket.TextMessage, []byte(m)); err != nil {
-				log.Printf("ws write error: %v", err)
-				return
+				// TODO: UNCOMMENT
+				fmt.Println("tried to do a thing")
+				// log.Printf("ws write error: %v", err)
+				// return
 			}
 		}
 	}
