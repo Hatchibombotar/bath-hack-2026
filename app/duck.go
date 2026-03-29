@@ -154,7 +154,9 @@ func (duck *Duck) Update() {
 		if duck.isSleeping {
 			duck.targetY = float64(duck.nestY) + 50
 		} else {
+			maxX, _ := duck.Game.ScreenSize()
 			duck.targetY = float64(duck.nestY)
+			duck.targetX = float64(maxX + 50)
 		}
 		//do client duck behaviour
 	}
