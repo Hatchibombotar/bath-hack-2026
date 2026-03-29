@@ -46,15 +46,18 @@ func (g *Game) HandleMessage(message []byte) error {
 		playerIndex := indexOfPlayer(g, action.PlayerId)
 		nestX, nestY := getNestPosition(1+playerIndex, g)
 
-		g.otherPlayers[action.PlayerId] = &Duck{
-			isOtherDuck: true,
-			X:           100,
-			Y:           100,
-			nestX:       nestX,
-			nestY:       nestY,
-			Game:        g,
+		_, exists := g.otherPlayers[action.PlayerId]
+		if !exists {
+			g.otherPlayers[action.PlayerId] = &Duck{
+				isOtherDuck: true,
+				X:           float64(nestX),
+				Y:           float64(nestY),
+				nestX:       nestX,
+				nestY:       nestY,
+				Game:        g,
+			}
+			g.otherPlayers[action.PlayerId].Init()
 		}
-		g.otherPlayers[action.PlayerId].Init()
 
 		g.otherPlayers[action.PlayerId].Name = action.PlayerData.DuckName
 		g.otherPlayers[action.PlayerId].SetSkin(action.PlayerData.DuckSkin)
