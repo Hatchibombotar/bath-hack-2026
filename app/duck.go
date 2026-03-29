@@ -22,7 +22,7 @@ type Duck struct {
 	Game             *Game
 	nestX, nestY     int
 
-	isAtNest   bool
+	isAtNest bool
 
 	isHovered  bool //if mouse intersecting bounding box of image
 	isSleeping bool //true if in a sleeping state (in a study session)
@@ -81,66 +81,70 @@ func (duck *Duck) NextSkin() {
 }
 
 func (duck *Duck) Update() {
-	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
-		duck.NextSkin()
-	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyS) {
-		duck.isSleeping = !duck.isSleeping
-	}
+	if !duck.isOtherDuck {
+		if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
+			duck.NextSkin()
+		}
+		if inpututil.IsKeyJustPressed(ebiten.KeyS) {
+			duck.isSleeping = !duck.isSleeping
+		}
 
-	g := duck.Game
+		g := duck.Game
 
-	duck.isAtNest = (float64(duck.nestX + duck.nestY) - duck.X - duck.Y) < 6
+		duck.isAtNest = (float64(duck.nestX+duck.nestY) - duck.X - duck.Y) < 6
 
-	duck.isHovered = isPointInRect(
-		g.cursorX, g.cursorY,
-		int(g.duck.X), int(g.duck.Y),
-		duckWidth*duckScale,
-		duckWidth*duckScale,
-	)
+		duck.isHovered = isPointInRect(
+			g.cursorX, g.cursorY,
+			int(g.duck.X), int(g.duck.Y),
+			duckWidth*duckScale,
+			duckWidth*duckScale,
+		)
 
-	if duck.isHeld || duck.isMoving {
-		duck.isFacingRight = (duck.targetX - duck.X) < 0
-	}
+		if duck.isHeld || duck.isMoving {
+			duck.isFacingRight = (duck.targetX - duck.X) < 0
+		}
 
-	if duck.isSleeping {
-		duck.isMoving = false
-		duck.isWalking = false
-		duck.isFlying = false
-	} else if duck.isHeld {
-		if !ebiten.IsMouseButtonPressed(ebiten.MouseButton2) {
-			duck.isHeld = false
-			duck.lastTimestamp = g.frame
-			duck.waitTime = rand.IntN(200) + 50
-			//could make array of motion booleans that can be set to false via one func call to prevent repetition
+		if duck.isSleeping {
+			duck.isMoving = false
 			duck.isWalking = false
 			duck.isFlying = false
-		}
-	} else if duck.isHovered && ebiten.IsMouseButtonPressed(ebiten.MouseButton2) {
-		duck.isHeld = true
-		duck.isWalking = false
-		duck.isFlying = false
-	} else if g.frame-duck.lastTimestamp > duck.waitTime {
-		duck.isMoving = !duck.isMoving
-		maxX, maxY := g.ScreenSize()
-		if duck.isMoving {
-			duck.targetX = float64(rand.IntN(maxX))
-			if rand.IntN(2) != 1 {
-				duck.isFlying = true
+		} else if duck.isHeld {
+			if !ebiten.IsMouseButtonPressed(ebiten.MouseButton2) {
+				duck.isHeld = false
+				duck.lastTimestamp = g.frame
+				duck.waitTime = rand.IntN(200) + 50
+				//could make array of motion booleans that can be set to false via one func call to prevent repetition
 				duck.isWalking = false
-				duck.targetY = float64(rand.IntN(maxY))
-			} else {
-				duck.isWalking = true
 				duck.isFlying = false
-				duck.targetY = duck.Y
 			}
-		} else {
-			duck.isFlying = false
+		} else if duck.isHovered && ebiten.IsMouseButtonPressed(ebiten.MouseButton2) {
+			duck.isHeld = true
 			duck.isWalking = false
-		}
+			duck.isFlying = false
+		} else if g.frame-duck.lastTimestamp > duck.waitTime {
+			duck.isMoving = !duck.isMoving
+			maxX, maxY := g.ScreenSize()
+			if duck.isMoving {
+				duck.targetX = float64(rand.IntN(maxX))
+				if rand.IntN(2) != 1 {
+					duck.isFlying = true
+					duck.isWalking = false
+					duck.targetY = float64(rand.IntN(maxY - 35))
+				} else {
+					duck.isWalking = true
+					duck.isFlying = false
+					duck.targetY = duck.Y
+				}
+			} else {
+				duck.isFlying = false
+				duck.isWalking = false
+			}
 
-		duck.lastTimestamp = g.frame
-		duck.waitTime = rand.IntN(400) + 100
+			duck.lastTimestamp = g.frame
+			duck.waitTime = rand.IntN(400) + 100
+		}
+	} else {
+		//do client duck behaviour
 	}
 }
 
@@ -152,7 +156,7 @@ func (duck *Duck) Move() {
 		duck.X += float64(xDistanceToTarget) / 30
 		duck.Y += float64(yDistanceToTarget) / 30
 
-		duck.isFacingRight = (float64(duck.nestX) - duck.X) < 0 
+		duck.isFacingRight = (float64(duck.nestX) - duck.X) < 0
 
 		//fmt.Println(xDistanceToTarget + yDistanceToTarget)
 	} else if duck.isHeld {
