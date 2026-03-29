@@ -61,7 +61,7 @@ func UpdateTimerInputUIScreen(g *Game) {
 }
 
 func DrawTimerInputUiScreen(g *Game, screen *ebiten.Image) {
-	offsetX, offsetY := g.duck.X-112, g.duck.Y-110
+	offsetX, offsetY := int(g.duck.X)-112, int(g.duck.Y)-110
 	if offsetX < 42 {
 		offsetX = 42
 	}

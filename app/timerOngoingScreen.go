@@ -57,7 +57,7 @@ func UpdateTimerOngoingUIScreen(g *Game) {
 
 func DrawTimerOngoingUiScreen(g *Game, screen *ebiten.Image) {
 	// offsetX, offsetY := screen.Bounds().Size().X-200, 200
-	offsetX, offsetY := g.duck.X-112, g.duck.Y-110
+	offsetX, offsetY := int(g.duck.X)-112, int(g.duck.Y)-110
 	if offsetX < 0 {
 		offsetX = 0
 	}
