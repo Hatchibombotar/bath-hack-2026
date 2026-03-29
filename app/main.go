@@ -167,21 +167,11 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	for range len(g.otherPlayerData) + 1 {
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Scale(float64(duckScale), float64(duckScale))
-		// op.GeoM.Translate(100, 100)
 		X, Y := getNestPosition(i, g)
 		op.GeoM.Translate(
 			float64(X), float64(Y),
 		)
 		screen.DrawImage(nestSpriteBack, op)
-
-		// op = &ebiten.DrawImageOptions{}
-		// op.GeoM.Scale(float64(duckScale), float64(duckScale))
-		// // op.GeoM.Translate(100, 100)
-		// op.GeoM.Translate(
-		// 	float64(screen.Bounds().Size().X)-float64(nestSpriteBack.Bounds().Size().X*duckScale)-float64(nestSpriteBack.Bounds().Size().X*duckScale*i)-10,
-		// 	float64(screen.Bounds().Size().Y)-float64(nestSpriteBack.Bounds().Size().Y*duckScale)-45,
-		// )
-		// screen.DrawImage(sittingAssets[playerData.DuckSkin], op)
 		i++
 	}
 
@@ -191,11 +181,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		duck.Draw(screen)
 	}
 
-	i = 1
-	for range g.otherPlayerData {
+	i = 0
+	for range len(g.otherPlayerData) + 1 {
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Scale(float64(duckScale), float64(duckScale))
-		// op.GeoM.Translate(100, 100)
 		X, Y := getNestPosition(i, g)
 		op.GeoM.Translate(
 			float64(X), float64(Y),
