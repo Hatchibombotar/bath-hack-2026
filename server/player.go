@@ -3,5 +3,7 @@ package main
 import "github.com/gorilla/websocket"
 
 type Player struct {
-	Conn *websocket.Conn
+	Conn              *websocket.Conn
+	PlayerId          int
+	visiblePlayerData VisiblePlayerData
 }
