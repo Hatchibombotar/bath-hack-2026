@@ -106,7 +106,7 @@ func (duck *Duck) Update() {
 		duck.isWalking = false
 		duck.isFlying = false
 	} else if duck.isHeld {
-		if !ebiten.IsMouseButtonPressed(ebiten.MouseButton0) {
+		if !ebiten.IsMouseButtonPressed(ebiten.MouseButton2) {
 			duck.isHeld = false
 			duck.lastTimestamp = g.frame
 			duck.waitTime = rand.IntN(200) + 50
@@ -114,7 +114,7 @@ func (duck *Duck) Update() {
 			duck.isWalking = false
 			duck.isFlying = false
 		}
-	} else if duck.isHovered && ebiten.IsMouseButtonPressed(ebiten.MouseButton0) {
+	} else if duck.isHovered && ebiten.IsMouseButtonPressed(ebiten.MouseButton2) {
 		duck.isHeld = true
 		duck.isWalking = false
 		duck.isFlying = false
