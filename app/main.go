@@ -51,7 +51,7 @@ type Game struct {
 
 	State ServerState
 
-	otherPlayerData map[int]VisiblePlayerData
+	otherPlayerData map[int]*VisiblePlayerData
 }
 
 // Update processes incoming websocket messages (non-blocking).
@@ -120,12 +120,16 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// 	screen.Fill(color.RGBA{255, 255, 255, 10})
 	// }
 
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Scale(float64(duckScale), float64(duckScale))
-	// op.GeoM.Translate(100, 100)
-	op.GeoM.Translate(float64(screen.Bounds().Size().X)-float64(nestSprite.Bounds().Size().X*duckScale), float64(screen.Bounds().Size().Y)-float64(nestSprite.Bounds().Size().Y*duckScale)-50)
-
-	screen.DrawImage(nestSprite, op)
+	for i := range 4 {
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Scale(float64(duckScale), float64(duckScale))
+		// op.GeoM.Translate(100, 100)
+		op.GeoM.Translate(
+			float64(screen.Bounds().Size().X)-float64(nestSprite.Bounds().Size().X*duckScale)-float64(nestSprite.Bounds().Size().X*duckScale*i),
+			float64(screen.Bounds().Size().Y)-float64(nestSprite.Bounds().Size().Y*duckScale)-25,
+		)
+		screen.DrawImage(nestSprite, op)
+	}
 
 	g.duck.Draw(screen)
 
