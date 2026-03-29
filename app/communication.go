@@ -56,6 +56,7 @@ func (g *Game) HandleMessage(message []byte) error {
 			return err
 		}
 		g.duck.PlayerId = action.PlayerId
+		//g.otherPlayerData[g.duck.PlayerId] = &VisiblePlayerData{DuckName: g.duck.Name, IsWorking: g.duck.isSleeping, DuckSkin: g.du}
 	}
 
 	return nil
