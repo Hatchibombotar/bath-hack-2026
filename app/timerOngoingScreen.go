@@ -29,6 +29,7 @@ var resumeButton *Button = &Button{
 }
 
 func UpdateTimerOngoingUIScreen(g *Game) {
+	isOver := int(g.timeRemainingOnTimer.Minutes()) == 0 && int(g.timeRemainingOnTimer.Seconds()) == 0
 	if pauseButton.IsHovered(g) || stopButton.IsHovered(g) || resumeButton.IsHovered(g) {
 		g.hasHover = true
 	}
@@ -52,6 +53,12 @@ func UpdateTimerOngoingUIScreen(g *Game) {
 
 	if g.isTimerRunning {
 		g.timeRemainingOnTimer = time.Duration(g.timerDuration) - time.Since(g.timerStartTime)
+	}
+
+	if isOver {
+		g.State = TimerSettingsState
+		g.isTimerRunning = false
+		g.duck.isSleeping = false
 	}
 }
 
