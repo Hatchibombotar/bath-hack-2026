@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"os"
 	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"github.com/joho/godotenv"
 )
 
 var pixelScale = 1
@@ -227,6 +229,11 @@ func (g *Game) ScreenSize() (int, int) {
 }
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	// channel to receive text messages from websocket reader
 	msgCh := make(chan []byte, 64)
 	sendCh := make(chan []byte, 8)
@@ -239,8 +246,10 @@ func main() {
 	game.otherPlayerData = make(map[int]*VisiblePlayerData)
 	game.otherPlayers = make(map[int]*Duck)
 
+	wsServer := os.Getenv("WS_SERVER")
+
 	// start websocket client goroutine
-	go runWebSocketClient(ctx, "ws://localhost:8080/", msgCh, sendCh, game)
+	go runWebSocketClient(ctx, wsServer, msgCh, sendCh, game)
 
 	// start ebiten main loop
 	w, h := ebiten.Monitor().Size()
@@ -266,7 +275,7 @@ func main() {
 	game.duck = duck
 	win, title := GetForegroundWindowInfo()
 	println(win.bottom, title)
-	err := ebiten.RunGameWithOptions(game, &ebiten.RunGameOptions{
+	err = ebiten.RunGameWithOptions(game, &ebiten.RunGameOptions{
 		ScreenTransparent: true,
 	})
 	if err != nil {
