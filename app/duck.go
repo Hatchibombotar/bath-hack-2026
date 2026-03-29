@@ -166,7 +166,11 @@ func (duck *Duck) Move() {
 		duck.X += float64(xDistanceToTarget) / 30
 		duck.Y += float64(yDistanceToTarget) / 30
 
-		duck.isFacingRight = (float64(duck.nestX) - duck.X) < 0
+		if duck.isAtNest {
+			duck.isFacingRight = true
+		} else {
+			duck.isFacingRight = (float64(duck.nestX) - duck.X) < 0
+		}
 
 		//fmt.Println(xDistanceToTarget + yDistanceToTarget)
 	} else if duck.isHeld {
