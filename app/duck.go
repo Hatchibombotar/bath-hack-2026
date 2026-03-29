@@ -37,7 +37,7 @@ func (duck *Duck) Init() {
 	duck.Assets = make(map[string]*ebiten.Image)
 	duck.Skins = []string{"duck_bathHack", "duck_green"}
 	duck.Name = "big stan"
-	duck.SetSkin("duck_bathHack")
+	duck.SetSkin("duck_green")
 }
 
 func (duck *Duck) SetSkin(skinName string) {
@@ -104,7 +104,7 @@ func (duck *Duck) Update() {
 		duck.isHeld = true
 		duck.isWalking = false
 		duck.isFlying = false
-	} else if (g.frame-duck.lastTimestamp > duck.waitTime) {
+	} else if g.frame-duck.lastTimestamp > duck.waitTime {
 		duck.takeBreak = !duck.takeBreak
 		duck.targetX = duck.X + rand.IntN(1000) - 500
 		duck.targetY = duck.Y + rand.IntN(1000) - 500
