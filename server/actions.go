@@ -10,7 +10,7 @@ type MessageFriendAction struct {
 }
 
 type VisiblePlayerDataAction struct {
-	Action     string            `json:"action"`
-	PlayerId   int               `json:"player"`
-	PlayerData VisiblePlayerData `json:"visible_player_data"`
+	Action     string             `json:"action"`
+	PlayerId   int                `json:"player"`
+	PlayerData *VisiblePlayerData `json:"visible_player_data"`
 }

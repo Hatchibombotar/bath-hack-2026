@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/url"
@@ -82,13 +81,6 @@ func (g *Game) Update() error {
 
 	if g.duck.isHovered {
 		g.hasHover = true
-
-		message, err := json.Marshal(&GenericAction{Action: "blah blah"})
-		if err != nil {
-			panic(err)
-		}
-
-		g.SendMessage(message)
 	}
 	// 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButton2) {
 	// 		fmt.Println("Quack")
@@ -124,7 +116,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// 	screen.Fill(color.RGBA{255, 255, 255, 10})
 	// }
 
-	for i := range g.otherPlayerData {
+	i := 1
+	for _, playerData := range g.otherPlayerData {
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Scale(float64(duckScale), float64(duckScale))
 		// op.GeoM.Translate(100, 100)
@@ -141,7 +134,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			float64(screen.Bounds().Size().X)-float64(nestSprite.Bounds().Size().X*duckScale)-float64(nestSprite.Bounds().Size().X*duckScale*i)-10,
 			float64(screen.Bounds().Size().Y)-float64(nestSprite.Bounds().Size().Y*duckScale)-45,
 		)
-		screen.DrawImage(sittingAssets["duck_green"], op)
+		screen.DrawImage(sittingAssets[playerData.DuckSkin], op)
 	}
 
 	g.duck.Draw(screen)
@@ -176,6 +169,7 @@ func main() {
 
 	game.timerLength = 60
 	game.isStartingUIOpen = true
+	game.otherPlayerData = make(map[int]*VisiblePlayerData)
 
 	// start websocket client goroutine
 	go runWebSocketClient(ctx, "ws://localhost:8080/", msgCh, sendCh, game)

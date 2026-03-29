@@ -33,26 +33,27 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 	player := &Player{
 		Conn:     conn,
 		PlayerId: playerId,
-		visiblePlayerData: VisiblePlayerData{
+		visiblePlayerData: &VisiblePlayerData{
 			DuckName:  "duck",
 			DuckSkin:  "duck_green",
 			IsWorking: false,
 		},
 	}
 	playerId += 1
-	broadcastMessage(VisiblePlayerDataAction{Action: "new_player", PlayerId: player.PlayerId, PlayerData: player.visiblePlayerData})
-	for _, player := range room.players {
-		message, err := json.Marshal(&VisiblePlayerDataAction{Action: "new_player", PlayerData: player.visiblePlayerData})
-		if err != nil {
-			panic(err)
-		}
+	// broadcastMessage(&VisiblePlayerDataAction{Action: "new_player", PlayerId: player.PlayerId, PlayerData: player.visiblePlayerData})
+	// for _, player := range room.players {
+	// 	message, err := json.Marshal(&VisiblePlayerDataAction{Action: "1", PlayerData: player.visiblePlayerData})
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
 
-		err = player.Conn.WriteMessage(websocket.TextMessage, message)
-		if err != nil {
-			panic(err)
-		}
-	}
+	// 	err = player.Conn.WriteMessage(websocket.TextMessage, message)
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// }
 	room.players = append(room.players, player)
+	updateAllDuckData()
 	for {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
@@ -67,6 +68,27 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 		// 	fmt.Println("Error writing message:", err)
 		// 	break
 		// }
+	}
+}
+
+func updateAllDuckData() {
+	for _, playerToBeSentTo := range room.players {
+		for _, player := range room.players {
+			if player == playerToBeSentTo {
+				continue
+			}
+			data := &VisiblePlayerDataAction{Action: "new_player", PlayerId: player.PlayerId, PlayerData: player.visiblePlayerData}
+
+			message, err := json.Marshal(data)
+			if err != nil {
+				continue
+			}
+
+			err = playerToBeSentTo.Conn.WriteMessage(websocket.TextMessage, message)
+			if err != nil {
+				continue
+			}
+		}
 	}
 }
 
