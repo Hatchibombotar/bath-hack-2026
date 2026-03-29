@@ -49,6 +49,7 @@ func (duck *Duck) NextSkin() {
 	duck.Assets["duck_walk"] = LoadImageFromPath(fmt.Sprintf("assets/%s/duck_walk.png", newSkin))
 	duck.Assets["duck_sitting"] = LoadImageFromPath(fmt.Sprintf("assets/%s/duck_sitting.png", newSkin))
 	duck.Assets["duck_sleeping"] = LoadImageFromPath(fmt.Sprintf("assets/%s/duck_sleeping.png", newSkin))
+	duck.Assets["duck_flying"] = LoadImageFromPath(fmt.Sprintf("assets/%s/duck_flying.png", newSkin))
 }
 
 func (duck *Duck) Update() {
@@ -68,11 +69,14 @@ func (duck *Duck) Update() {
 		duckWidth*duckScale,
 	)
 
+	if duck.isHeld || duck.isFlying {
+		duck.isFacingRight = (duck.targetX - duck.X) < 0
+	}
+
 	if duck.isSleeping {
 		duck.isWalking = false
 		duck.isFlying = false
 	} else if duck.isHeld {
-		duck.isFacingRight = (duck.targetX - duck.X) < 0
 		if !ebiten.IsMouseButtonPressed(ebiten.MouseButton0) {
 			duck.isHeld = false
 			duck.lastTimestamp = g.frame
@@ -86,8 +90,10 @@ func (duck *Duck) Update() {
 		duck.isHeld = true
 		duck.isWalking = false
 		duck.isFlying = false
-	} else if g.frame-duck.lastTimestamp > duck.waitTime {
+	} else if (g.frame-duck.lastTimestamp > duck.waitTime) {
 		duck.takeBreak = !duck.takeBreak
+		duck.targetX = duck.X + rand.IntN(1000) - 500
+		duck.targetY = duck.Y + rand.IntN(1000) - 500
 		if duck.takeBreak {
 			duck.isWalking = false
 			duck.isFlying = false
@@ -108,25 +114,23 @@ func (duck *Duck) Move() {
 		duck.X += int(xDistanceToTarget) / 8
 		duck.Y += int(yDistanceToTarget) / 8
 	} else if !duck.isSleeping && !duck.takeBreak {
-		duck.isFacingRight = ((duck.waitTime % 2) == 0)
 		duck.isFlying = ((duck.waitTime % 4) >= 2) // ratio of last nums represents probability^-1
-		goingUp := ((duck.waitTime % 8) >= 4)
-		if duck.isFacingRight {
-			duck.X -= 1
-		} else {
-			duck.X += 1
-		}
+		//goingUp := ((duck.waitTime % 8) >= 4)
 		if duck.isFlying {
-			duck.isFlying = true
 			duck.isWalking = false
-			if goingUp {
-				duck.Y += 1
-			} else {
-				duck.Y -= 1
-			}
+			xDistanceToTarget := float64(duck.targetX - duck.X)
+			yDistanceToTarget := float64(duck.targetY - duck.Y)
+
+			duck.X += int(xDistanceToTarget) / 80
+			duck.Y += int(yDistanceToTarget) / 80
 		} else {
-			duck.isFlying = false
 			duck.isWalking = true
+			duck.isFacingRight = ((duck.waitTime % 2) == 0)
+			if duck.isFacingRight {
+				duck.X -= 1
+			} else {
+				duck.X += 1
+			}
 		}
 	}
 }
@@ -149,6 +153,8 @@ func (duck *Duck) Draw(screen *ebiten.Image) {
 		screen.DrawImage(duck.Assets["duck"], op)
 	} else if duck.isWalking {
 		DrawSpriteFrame(screen, duck.Assets["duck_walk"], 30, 30, (duck.Game.frame/7)%4, op)
+	} else if duck.isFlying {
+		DrawSpriteFrame(screen, duck.Assets["duck_flying"], 30, 30, (duck.Game.frame/7)%4, op)
 	} else {
 		screen.DrawImage(duck.Assets["duck_sitting"], op)
 	}
