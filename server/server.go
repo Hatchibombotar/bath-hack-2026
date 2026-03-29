@@ -39,6 +39,14 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 			IsWorking: false,
 		},
 	}
+	message, err := json.Marshal(&PlayerData{Action: "set_player", PlayerId: playerId})
+	if err != nil {
+		panic(err)
+	}
+	err = player.Conn.WriteMessage(websocket.TextMessage, message)
+	if err != nil {
+		panic(err)
+	}
 	playerId += 1
 	// broadcastMessage(&VisiblePlayerDataAction{Action: "new_player", PlayerId: player.PlayerId, PlayerData: player.visiblePlayerData})
 	// for _, player := range room.players {

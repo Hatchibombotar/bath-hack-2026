@@ -49,6 +49,13 @@ func (g *Game) HandleMessage(message []byte) error {
 			return err
 		}
 		g.otherPlayerData[action.PlayerId] = &action.PlayerData
+	case "set_player":
+		action := &PlayerData{}
+		err := json.Unmarshal(message, action)
+		if err != nil {
+			return err
+		}
+		g.duck.PlayerId = action.PlayerId
 	}
 
 	return nil

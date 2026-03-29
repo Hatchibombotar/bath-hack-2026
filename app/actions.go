@@ -9,6 +9,11 @@ type MessageFriendAction struct {
 	Message string `json:"message"`
 }
 
+type PlayerData struct {
+	Action   string `json:"action"`
+	PlayerId int    `json:"player"`
+}
+
 type VisiblePlayerDataAction struct {
 	Action     string            `json:"action"`
 	PlayerId   int               `json:"player"`

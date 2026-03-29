@@ -73,7 +73,6 @@ func (g *Game) Update() error {
 	default:
 		// no message this frame
 	}
-
 	g.frame += 1
 	g.cursorX, g.cursorY = ebiten.CursorPosition()
 	g.hasHover = false
@@ -200,7 +199,6 @@ func main() {
 	go runWebSocketClient(ctx, "ws://localhost:8080/", msgCh, sendCh, game)
 
 	// start ebiten main loop
-
 	w, h := ebiten.Monitor().Size()
 	// window size 1
 	ebiten.SetWindowSize((w)-1, h)
@@ -219,11 +217,11 @@ func main() {
 	duck.Init()
 
 	game.duck = duck
-
+	win, title := GetForegroundWindowInfo()
+	println(win.bottom, title)
 	err := ebiten.RunGameWithOptions(game, &ebiten.RunGameOptions{
 		ScreenTransparent: true,
 	})
-
 	if err != nil {
 		log.Fatal(err)
 	}
