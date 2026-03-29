@@ -3,34 +3,53 @@ package main
 import (
 	"fmt"
 	"image/color"
-	"math"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
+var pauseSymbol *ebiten.Image = LoadImageFromPath("assets/pause_button.png")
+var stopSymbol *ebiten.Image = LoadImageFromPath("assets/stop_button.png")
+var inputBoxLong *ebiten.Image = LoadImageFromPath("assets/input_box_long.png")
+
+var pauseButton *Button = &Button{
+	Image: pauseSymbol,
+	Scale: duckScale,
+}
+
+var stopButton *Button = &Button{
+	Image: stopSymbol,
+	Scale: duckScale,
+}
+var resumeButton *Button = &Button{
+	Image: playSymbol,
+	Scale: duckScale,
+}
+
 func UpdateTimerOngoingUIScreen(g *Game) {
-	if minusButton.IsHovered(g) || plusButton.IsHovered(g) || playButton.IsHovered(g) {
+	if pauseButton.IsHovered(g) || stopButton.IsHovered(g) || resumeButton.IsHovered(g) {
 		g.hasHover = true
 	}
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButton0) {
-		if plusButton.IsHovered(g) {
-			g.timerLength += 5
+		if pauseButton.IsHovered(g) {
+			g.isTimerRunning = false
+			g.timerDuration = g.timeRemainingOnTimer
 		}
-
-		if minusButton.IsHovered(g) {
-			g.timerLength -= 5
+		if resumeButton.IsHovered(g) && !g.isTimerRunning {
+			g.isTimerRunning = true
+			g.timerStartTime = time.Now()
 		}
-
-		g.timerLength = int(math.Max(5, float64(g.timerLength)))
-		g.timerLength = int(math.Min(95, float64(g.timerLength)))
+		if stopButton.IsHovered(g) {
+			g.State = TimerSettingsState
+		}
 	}
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButton0) {
-		if playButton.IsHovered(g) {
-			g.State = TimerOngoingState
-			fmt.Println("eek")
-		}
+	}
+
+	if g.isTimerRunning {
+		g.timeRemainingOnTimer = time.Duration(g.timerDuration) - time.Since(g.timerStartTime)
 	}
 }
 
@@ -42,36 +61,38 @@ func DrawTimerOngoingUiScreen(g *Game, screen *ebiten.Image) {
 	op.GeoM.Translate(float64(offsetX-42), float64(offsetY)-42)
 	screen.DrawImage(speechBubble, op)
 
-	minusButton.X = offsetX
-	minusButton.Y = offsetY
-	minusButton.Draw(screen)
+	resumeButton.X = offsetX + 46 - 36
+	resumeButton.Y = offsetY + 36
+	resumeButton.Draw(screen)
 
-	plusButton.X = offsetX + 96
-	plusButton.Y = offsetY
-	plusButton.Draw(screen)
+	pauseButton.X = offsetX + 46
+	pauseButton.Y = offsetY + 36
+	pauseButton.Draw(screen)
 
-	playButton.X = offsetX + 46
-	playButton.Y = offsetY + 36
-	playButton.Draw(screen)
+	stopButton.X = offsetX + 46 + 36
+	stopButton.Y = offsetY + 36
+	stopButton.Draw(screen)
 
 	scoreText := &text.GoTextFace{
 		Source: fontFaceSource,
 		Size:   32,
 	}
 	// TODO: center text properly
-	content := fmt.Sprintln(g.timerLength)
-	op1 := &text.DrawOptions{}
-	op1.GeoM.Translate(float64(offsetX+(minusSymbol.Bounds().Size().X*duckScale)+16), float64(offsetY-10))
-	op1.ColorScale.ScaleWithColor(color.Black)
+	content := fmt.Sprint(int(g.timeRemainingOnTimer.Minutes()), ":")
+	content += fmt.Sprintf("%02d", int(g.timeRemainingOnTimer.Seconds()-float64(60*int(g.timeRemainingOnTimer.Minutes()))))
 
 	// textWidth, _ := text.Measure(content, scoreText, 1)
 
 	op = &ebiten.DrawImageOptions{}
 	op.GeoM.Scale(float64(duckScale), float64(duckScale))
-	op.GeoM.Translate(float64(offsetX+(minusSymbol.Bounds().Dx())+26), float64(offsetY)-3)
-	screen.DrawImage(inputBox, op)
+	op.GeoM.Translate(float64(offsetX+(9)), float64(offsetY)-3)
+	screen.DrawImage(inputBoxLong, op)
 
 	// DrawNineSlice
+
+	op1 := &text.DrawOptions{}
+	op1.GeoM.Translate(float64(offsetX+20), float64(offsetY-10))
+	op1.ColorScale.ScaleWithColor(color.Black)
 
 	text.Draw(screen, content, scoreText, op1)
 

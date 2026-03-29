@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color"
 	"math"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -48,7 +49,11 @@ func UpdateTimerInputUIScreen(g *Game) {
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButton0) {
 		if playButton.IsHovered(g) {
 			g.State = TimerOngoingState
-			fmt.Println("eek")
+			g.isTimerRunning = true
+			g.timerStartTime = time.Now()
+
+			g.timerDuration = time.Duration(g.timerLength) * time.Minute
+			g.timeRemainingOnTimer = time.Duration(g.timerLength) * time.Minute
 		}
 	}
 }

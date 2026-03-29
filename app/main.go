@@ -48,8 +48,13 @@ type Game struct {
 	// actionUI         *ActionUI
 	frame int
 
+	timeRemainingOnTimer time.Duration
+	timerStartTime       time.Time
+	isTimerRunning       bool
+
 	isStartingUIOpen bool
 	timerLength      int
+	timerDuration    time.Duration
 
 	connectionFail bool
 
@@ -74,6 +79,12 @@ func (g *Game) Update() error {
 	g.hasHover = false
 
 	if g.State == TimerSettingsState {
+	}
+
+	switch g.State {
+	case TimerSettingsState:
+		UpdateTimerInputUIScreen(g)
+	case TimerOngoingState:
 		UpdateTimerOngoingUIScreen(g)
 	}
 
@@ -159,6 +170,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// screen.DrawImage(speechBubble, op)
 
 	if g.State == TimerSettingsState {
+		DrawTimerInputUiScreen(g, screen)
+	} else if g.State == TimerOngoingState {
 		DrawTimerOngoingUiScreen(g, screen)
 	}
 }
