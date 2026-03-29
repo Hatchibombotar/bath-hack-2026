@@ -155,8 +155,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// 	screen.Fill(color.RGBA{255, 255, 255, 10})
 	// }
 
-	i := 1
-	for range g.otherPlayerData {
+	i := 0
+	for range len(g.otherPlayerData) + 1 {
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Scale(float64(duckScale), float64(duckScale))
 		// op.GeoM.Translate(100, 100)
