@@ -271,8 +271,10 @@ func main() {
 	}
 
 	duck.Init()
-
 	game.duck = duck
+
+	game.SendDuckInfo()
+
 	win, title := GetForegroundWindowInfo()
 	println(win.bottom, title)
 	err = ebiten.RunGameWithOptions(game, &ebiten.RunGameOptions{
