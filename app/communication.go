@@ -10,7 +10,7 @@ func (g *Game) SendMessage(message []byte) {
 }
 
 func (g *Game) SendDuckInfo() {
-	data := &VisiblePlayerDataAction{Action: "update_info", PlayerData: &VisiblePlayerData{
+	data := &VisiblePlayerDataAction{Action: "player_update", PlayerData: &VisiblePlayerData{
 		DuckName:  g.duck.Name,
 		DuckSkin:  g.duck.GetSkin(),
 		IsWorking: g.duck.isSleeping,

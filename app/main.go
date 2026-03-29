@@ -236,7 +236,7 @@ func main() {
 
 	// channel to receive text messages from websocket reader
 	msgCh := make(chan []byte, 64)
-	sendCh := make(chan []byte, 8)
+	sendCh := make(chan []byte, 64)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	game := &Game{msgCh: msgCh, ctx: ctx, cancel: cancel, sendCh: sendCh}
@@ -339,6 +339,7 @@ func runWebSocketClient(ctx context.Context, rawURL string, msgCh chan<- []byte,
 			_ = conn.WriteMessage(websocket.PingMessage, nil)
 		case m := <-sendCh:
 			// send text message; handle write errors
+			fmt.Println("trying to send message", string(m))
 			if err := conn.WriteMessage(websocket.TextMessage, []byte(m)); err != nil {
 				// TODO: UNCOMMENT
 				fmt.Println("tried to do a thing")
