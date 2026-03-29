@@ -255,9 +255,9 @@ func main() {
 	nestX, nestY := getNestPosition(0, game)
 	duck := &Duck{
 		Game:  game,
-		X:     float64(nestX),
+		X:     float64(nestX) + 6,
 		Y:     float64(nestY),
-		nestX: nestX,
+		nestX: nestX + 6,
 		nestY: nestY,
 	}
 
