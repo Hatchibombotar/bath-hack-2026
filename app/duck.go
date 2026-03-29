@@ -43,7 +43,8 @@ type Duck struct {
 func (duck *Duck) Init() {
 	duck.Assets = make(map[string]*ebiten.Image)
 	duck.Skins = []string{"duck_bathHack", "duck_green"}
-	duck.Name = "big stan"
+	names := []string{"Alice", "Bob", "Charlie", "Diana", "Ethan", "Fiona", "George", "Hannah", "Ian", "Julia", "Kevin", "Luna", "Marcus", "Nora", "Oscar", "Piper", "Quinn", "Riley", "Stella", "Theo"}
+	duck.Name = names[rand.IntN(len(names))]
 	duck.SetSkin("duck_green")
 	duck.PlayerId = 0
 }
@@ -126,11 +127,11 @@ func (duck *Duck) Update() {
 			duck.isMoving = !duck.isMoving
 			maxX, maxY := g.ScreenSize()
 			if duck.isMoving {
-				duck.targetX = float64(rand.IntN(maxX))
+				duck.targetX = float64(float64(rand.IntN(maxX) - 70))
 				if rand.IntN(2) != 1 {
 					duck.isFlying = true
 					duck.isWalking = false
-					duck.targetY = float64(rand.IntN(maxY - 35))
+					duck.targetY = float64(rand.IntN(maxY - 110))
 				} else {
 					duck.isWalking = true
 					duck.isFlying = false
