@@ -22,6 +22,8 @@ type Duck struct {
 	Game             *Game
 	nestX, nestY     int
 
+	isAtNest   bool
+
 	isHovered  bool //if mouse intersecting bounding box of image
 	isSleeping bool //true if in a sleeping state (in a study session)
 	isHeld     bool //true if currently being dragged by mouse
@@ -31,7 +33,6 @@ type Duck struct {
 	isFlying  bool
 
 	isFacingRight bool //true if facing right, false if left
-	takeBreak     bool
 
 	isOtherDuck bool // true if this is not the client's duck
 
@@ -111,14 +112,12 @@ func (duck *Duck) Update() {
 			//could make array of motion booleans that can be set to false via one func call to prevent repetition
 			duck.isWalking = false
 			duck.isFlying = false
-			duck.takeBreak = true
 		}
 	} else if duck.isHovered && ebiten.IsMouseButtonPressed(ebiten.MouseButton0) {
 		duck.isHeld = true
 		duck.isWalking = false
 		duck.isFlying = false
 	} else if g.frame-duck.lastTimestamp > duck.waitTime {
-		duck.takeBreak = !duck.takeBreak
 		duck.isMoving = !duck.isMoving
 		maxX, maxY := g.ScreenSize()
 		if duck.isMoving {
@@ -143,7 +142,15 @@ func (duck *Duck) Update() {
 }
 
 func (duck *Duck) Move() {
-	if duck.isHeld {
+	if duck.isSleeping {
+		xDistanceToTarget := float64(duck.nestX - duck.X)
+		yDistanceToTarget := float64(duck.nestY - duck.Y)
+
+		duck.X += int(xDistanceToTarget) / 8
+		duck.Y += int(yDistanceToTarget) / 8
+
+		fmt.Println(xDistanceToTarget + yDistanceToTarget)
+	} else if duck.isHeld {
 		duck.targetX = duck.Game.cursorX - (int(duck.Assets["duck"].Bounds().Size().X)/2)*duckScale
 		duck.targetY = duck.Game.cursorY - (int(duck.Assets["duck"].Bounds().Size().Y)/2)*duckScale
 
