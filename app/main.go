@@ -78,9 +78,6 @@ func (g *Game) Update() error {
 	g.cursorX, g.cursorY = ebiten.CursorPosition()
 	g.hasHover = false
 
-	if g.State == TimerSettingsState {
-	}
-
 	switch g.State {
 	case TimerSettingsState:
 		UpdateTimerInputUIScreen(g)
