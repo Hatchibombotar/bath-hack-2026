@@ -17,8 +17,8 @@ type Duck struct {
 	Skin   int
 	Assets map[string]*ebiten.Image
 
-	X, Y             int
-	targetX, targetY int
+	X, Y             float64
+	targetX, targetY float64
 	Game             *Game
 	nestX, nestY     int
 
@@ -92,7 +92,7 @@ func (duck *Duck) Update() {
 
 	duck.isHovered = isPointInRect(
 		g.cursorX, g.cursorY,
-		g.duck.X, g.duck.Y,
+		int(g.duck.X), int(g.duck.Y),
 		duckWidth*duckScale,
 		duckWidth*duckScale,
 	)
@@ -102,6 +102,7 @@ func (duck *Duck) Update() {
 	}
 
 	if duck.isSleeping {
+		duck.isMoving = false
 		duck.isWalking = false
 		duck.isFlying = false
 	} else if duck.isHeld {
@@ -121,11 +122,11 @@ func (duck *Duck) Update() {
 		duck.isMoving = !duck.isMoving
 		maxX, maxY := g.ScreenSize()
 		if duck.isMoving {
-			duck.targetX = rand.IntN(maxX)
+			duck.targetX = float64(rand.IntN(maxX))
 			if rand.IntN(2) != 1 {
 				duck.isFlying = true
 				duck.isWalking = false
-				duck.targetY = rand.IntN(maxY)
+				duck.targetY = float64(rand.IntN(maxY))
 			} else {
 				duck.isWalking = true
 				duck.isFlying = false
@@ -143,34 +144,34 @@ func (duck *Duck) Update() {
 
 func (duck *Duck) Move() {
 	if duck.isSleeping {
-		xDistanceToTarget := float64(duck.nestX - duck.X)
-		yDistanceToTarget := float64(duck.nestY - duck.Y)
+		xDistanceToTarget := float64(duck.nestX) - duck.X
+		yDistanceToTarget := float64(duck.nestY) - duck.Y
 
-		duck.X += int(xDistanceToTarget) / 8
-		duck.Y += int(yDistanceToTarget) / 8
+		duck.X += float64(xDistanceToTarget) / 100
+		duck.Y += float64(yDistanceToTarget) / 100
 
-		fmt.Println(xDistanceToTarget + yDistanceToTarget)
+		//fmt.Println(xDistanceToTarget + yDistanceToTarget)
 	} else if duck.isHeld {
-		duck.targetX = duck.Game.cursorX - (int(duck.Assets["duck"].Bounds().Size().X)/2)*duckScale
-		duck.targetY = duck.Game.cursorY - (int(duck.Assets["duck"].Bounds().Size().Y)/2)*duckScale
+		duck.targetX = float64(duck.Game.cursorX - (int(duck.Assets["duck"].Bounds().Size().X)/2)*duckScale)
+		duck.targetY = float64(duck.Game.cursorY - (int(duck.Assets["duck"].Bounds().Size().Y)/2)*duckScale)
 
 		xDistanceToTarget := float64(duck.targetX - duck.X)
 		yDistanceToTarget := float64(duck.targetY - duck.Y)
 
-		duck.X += int(xDistanceToTarget) / 8
-		duck.Y += int(yDistanceToTarget) / 8
+		duck.X += float64(xDistanceToTarget) / 8
+		duck.Y += float64(yDistanceToTarget) / 8
 	} else if duck.isMoving {
 		xDistanceToTarget := float64(duck.targetX - duck.X)
 		yDistanceToTarget := float64(duck.targetY - duck.Y)
 		if duck.isWalking {
 			if duck.targetX > duck.X {
-				duck.X += 1
+				duck.X += 1.0
 			} else {
-				duck.X -= 1
+				duck.X -= 1.0
 			}
 		} else if duck.isFlying {
-			duck.X += int(xDistanceToTarget) / 80
-			duck.Y += int(yDistanceToTarget) / 80
+			duck.X += float64(xDistanceToTarget) / 80
+			duck.Y += float64(yDistanceToTarget) / 80
 		}
 		if xDistanceToTarget < 3 && yDistanceToTarget < 3 {
 			duck.isMoving = false
@@ -195,7 +196,11 @@ func (duck *Duck) Draw(screen *ebiten.Image) {
 	op.GeoM.Translate(float64(duck.X), float64(duck.Y))
 
 	if duck.isSleeping {
-		DrawSpriteFrame(screen, duck.Assets["duck_sleeping"], 30, 30, (duck.Game.frame/20)%3, op)
+		if duck.isAtNest {
+			DrawSpriteFrame(screen, duck.Assets["duck_sleeping"], 30, 30, (duck.Game.frame/20)%3, op)
+		} else {
+			DrawSpriteFrame(screen, duck.Assets["duck_flying"], 30, 30, (duck.Game.frame/7)%4, op)
+		}
 	} else if duck.isHeld {
 		screen.DrawImage(duck.Assets["duck"], op)
 	} else if duck.isWalking {
@@ -206,5 +211,5 @@ func (duck *Duck) Draw(screen *ebiten.Image) {
 		screen.DrawImage(duck.Assets["duck_sitting"], op)
 	}
 
-	ebitenutil.DebugPrintAt(screen, duck.Name, duck.X, duck.Y-20)
+	ebitenutil.DebugPrintAt(screen, duck.Name, int(duck.X), int(duck.Y-20))
 }
