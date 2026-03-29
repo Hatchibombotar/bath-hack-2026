@@ -9,6 +9,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 var pixelScale = 1
@@ -63,6 +64,8 @@ type Game struct {
 	otherPlayerData map[int]*VisiblePlayerData
 	otherPlayers    map[int]*Duck
 	playerList      []int
+
+	showUi bool
 }
 
 func indexOfPlayer(g *Game, id int) int {
@@ -103,11 +106,13 @@ func (g *Game) Update() error {
 	g.cursorX, g.cursorY = ebiten.CursorPosition()
 	g.hasHover = false
 
-	switch g.State {
-	case TimerSettingsState:
-		UpdateTimerInputUIScreen(g)
-	case TimerOngoingState:
-		UpdateTimerOngoingUIScreen(g)
+	if g.showUi {
+		switch g.State {
+		case TimerSettingsState:
+			UpdateTimerInputUIScreen(g)
+		case TimerOngoingState:
+			UpdateTimerOngoingUIScreen(g)
+		}
 	}
 
 	g.duck.Update()
@@ -120,6 +125,9 @@ func (g *Game) Update() error {
 
 	if g.duck.isHovered {
 		g.hasHover = true
+	}
+	if g.duck.isHovered && inpututil.IsMouseButtonJustPressed(ebiten.MouseButton0) {
+		g.showUi = !g.showUi
 	}
 	// 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButton2) {
 	// 		fmt.Println("Quack")
@@ -197,10 +205,13 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// op.GeoM.Translate(float64(screen.Bounds().Dx())-float64(speechBubble.Bounds().Dx()), float64(screen.Bounds().Dy())-float64(speechBubble.Bounds().Dx()))
 	// screen.DrawImage(speechBubble, op)
 
-	if g.State == TimerSettingsState {
-		DrawTimerInputUiScreen(g, screen)
-	} else if g.State == TimerOngoingState {
-		DrawTimerOngoingUiScreen(g, screen)
+	if g.showUi {
+		switch g.State {
+		case TimerSettingsState:
+			DrawTimerInputUiScreen(g, screen)
+		case TimerOngoingState:
+			DrawTimerOngoingUiScreen(g, screen)
+		}
 	}
 }
 
