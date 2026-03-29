@@ -25,15 +25,17 @@ type Duck struct {
 	isSleeping    bool //true if in a sleeping state (in a study session)
 	isHeld        bool //true if currently being dragged by mouse
 	isWalking     bool
+	isFlying      bool
 	isFacingRight bool //true if facing right, false if left
+	takeBreak     bool
 
 	lastTimestamp int
-	waitTime int
+	waitTime      int
 }
 
 func (duck *Duck) Init() {
 	duck.Assets = make(map[string]*ebiten.Image)
-	duck.Skins = []string{"duck_bathHack","duck_green"}
+	duck.Skins = []string{"duck_bathHack", "duck_green"}
 	duck.Name = "big stan"
 	duck.NextSkin()
 }
@@ -42,7 +44,7 @@ func (duck *Duck) NextSkin() {
 	duck.Skin += 1
 	duck.Skin = duck.Skin % len(duck.Skins)
 	newSkin := duck.Skins[duck.Skin]
-	
+
 	duck.Assets["duck"] = LoadImageFromPath(fmt.Sprintf("assets/%s/duck.png", newSkin))
 	duck.Assets["duck_walk"] = LoadImageFromPath(fmt.Sprintf("assets/%s/duck_walk.png", newSkin))
 	duck.Assets["duck_sitting"] = LoadImageFromPath(fmt.Sprintf("assets/%s/duck_sitting.png", newSkin))
@@ -68,6 +70,7 @@ func (duck *Duck) Update() {
 
 	if duck.isSleeping {
 		duck.isWalking = false
+		duck.isFlying = false
 	} else if duck.isHeld {
 		duck.isFacingRight = (duck.targetX - duck.X) < 0
 		if !ebiten.IsMouseButtonPressed(ebiten.MouseButton0) {
@@ -77,30 +80,50 @@ func (duck *Duck) Update() {
 		}
 	} else if duck.isHovered && ebiten.IsMouseButtonPressed(ebiten.MouseButton0) {
 		duck.isHeld = true
+		//could make array of motion booleans that can be set to false via one func call to prevent repetition
 		duck.isWalking = false
-	} else if (g.frame - duck.lastTimestamp > duck.waitTime) {
-		duck.isWalking = !duck.isWalking
+		duck.isFlying = false
+	} else if g.frame-duck.lastTimestamp > duck.waitTime {
+		duck.takeBreak = !duck.takeBreak
+		if duck.takeBreak {
+			duck.isWalking = false
+			duck.isFlying = false
+		}
 		duck.lastTimestamp = g.frame
-		duck.waitTime = rand.IntN(200) + 50
+		duck.waitTime = rand.IntN(400) + 100
 	}
 }
 
 func (duck *Duck) Move() {
 	if duck.isHeld {
-		duck.targetX = duck.Game.cursorX - (int(duck.Assets["duck"].Bounds().Size().X) / 2) * duckScale
-		duck.targetY = duck.Game.cursorY - (int(duck.Assets["duck"].Bounds().Size().Y) / 2) * duckScale
+		duck.targetX = duck.Game.cursorX - (int(duck.Assets["duck"].Bounds().Size().X)/2)*duckScale
+		duck.targetY = duck.Game.cursorY - (int(duck.Assets["duck"].Bounds().Size().Y)/2)*duckScale
 
 		xDistanceToTarget := float64(duck.targetX - duck.X)
 		yDistanceToTarget := float64(duck.targetY - duck.Y)
 
 		duck.X += int(xDistanceToTarget) / 8
 		duck.Y += int(yDistanceToTarget) / 8
-	} else if duck.isWalking {
+	} else if !duck.isSleeping && !duck.takeBreak {
 		duck.isFacingRight = ((duck.waitTime % 2) == 0)
-		if (duck.isFacingRight) {
+		duck.isFlying = ((duck.waitTime % 4) >= 2)
+		goingUp := ((duck.waitTime % 8) >= 4)
+		if duck.isFacingRight {
 			duck.X -= 1
 		} else {
 			duck.X += 1
+		}
+		if duck.isFlying {
+			duck.isFlying = true
+			duck.isWalking = false
+			if goingUp {
+				duck.Y += 1
+			} else {
+				duck.Y -= 1
+			}
+		} else {
+			duck.isFlying = false
+			duck.isWalking = true
 		}
 	}
 }
