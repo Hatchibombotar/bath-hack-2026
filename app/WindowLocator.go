@@ -48,9 +48,10 @@ func GetWindowRect(hwnd syscall.Handle, rect *RECT, maxCount int32) (len int32, 
 
 func GetForegroundWindowInfo() (RECT, string) {
 	active, _, _ := procGetForegroundWindow.Call()
+	fmt.Println(active)
 	titleBuffer := make([]uint16, 200)
 	rectBuffer := RECT{}
-	GetWindowText(syscall.Handle(active), &titleBuffer[0], int32(len(titleBuffer)))
+	//GetWindowText(syscall.Handle(active), &titleBuffer[0], int32(len(titleBuffer)))
 	GetWindowRect(syscall.Handle(active), &rectBuffer, 16)
 	fmt.Println(syscall.UTF16ToString(titleBuffer))
 	fmt.Println(rectBuffer.bottom, rectBuffer.right, rectBuffer.left, rectBuffer.top)
