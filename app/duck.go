@@ -144,6 +144,16 @@ func (duck *Duck) Update() {
 			duck.waitTime = rand.IntN(400) + 100
 		}
 	} else {
+		if duck.isHeld || duck.isMoving {
+			duck.isFacingRight = (duck.targetX - duck.X) < 0
+		}
+		duck.isAtNest = (float64(duck.nestX+duck.nestY) - duck.X - duck.Y) < 6
+
+		if duck.isSleeping {
+			duck.targetY = float64(duck.nestY) + 50
+		} else {
+			duck.targetY = float64(duck.nestY)
+		}
 		//do client duck behaviour
 	}
 }
