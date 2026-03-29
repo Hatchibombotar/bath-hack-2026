@@ -171,7 +171,7 @@ func (duck *Duck) Draw(screen *ebiten.Image) {
 	op.GeoM.Translate(float64(duck.X), float64(duck.Y))
 
 	if duck.isSleeping {
-		screen.DrawImage(duck.Assets["duck_sleeping"], op)
+		DrawSpriteFrame(screen, duck.Assets["duck_sleeping"], 30, 30, (duck.Game.frame/20)%3, op)
 	} else if duck.isHeld {
 		screen.DrawImage(duck.Assets["duck"], op)
 	} else if duck.isWalking {
