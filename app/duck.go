@@ -19,6 +19,7 @@ type Duck struct {
 	X, Y             int
 	targetX, targetY int
 	Game             *Game
+	nestX, nestY     int
 
 	isHovered     bool //if mouse intersecting bounding box of image
 	isSleeping    bool //true if in a sleeping state (in a study session)
@@ -45,11 +46,15 @@ func (duck *Duck) NextSkin() {
 	duck.Assets["duck"] = LoadImageFromPath(fmt.Sprintf("assets/%s/duck.png", newSkin))
 	duck.Assets["duck_walk"] = LoadImageFromPath(fmt.Sprintf("assets/%s/duck_walk.png", newSkin))
 	duck.Assets["duck_sitting"] = LoadImageFromPath(fmt.Sprintf("assets/%s/duck_sitting.png", newSkin))
+	duck.Assets["duck_sleeping"] = LoadImageFromPath(fmt.Sprintf("assets/%s/duck_sleeping.png", newSkin))
 }
 
 func (duck *Duck) Update() {
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 		duck.NextSkin()
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyS) {
+		duck.isSleeping = !duck.isSleeping
 	}
 
 	g := duck.Game
@@ -62,7 +67,8 @@ func (duck *Duck) Update() {
 	)
 
 	if duck.isSleeping {
-		duck.isSleeping = false
+		fmt.Println("zzz")
+		duck.isWalking = false
 	} else if duck.isHeld {
 		duck.isFacingRight = (duck.targetX - duck.X) < 0
 		if !ebiten.IsMouseButtonPressed(ebiten.MouseButton0) {
@@ -73,9 +79,7 @@ func (duck *Duck) Update() {
 	} else if duck.isHovered && ebiten.IsMouseButtonPressed(ebiten.MouseButton0) {
 		duck.isHeld = true
 		duck.isWalking = false
-	} 
-	
-	if (g.frame - duck.lastTimestamp > duck.waitTime) {
+	} else if (g.frame - duck.lastTimestamp > duck.waitTime) {
 		duck.isWalking = !duck.isWalking
 		duck.lastTimestamp = g.frame
 		duck.waitTime = rand.IntN(200) + 50
@@ -90,8 +94,8 @@ func (duck *Duck) Move() {
 		xDistanceToTarget := float64(duck.targetX - duck.X)
 		yDistanceToTarget := float64(duck.targetY - duck.Y)
 
-		duck.X += int(xDistanceToTarget) / 4
-		duck.Y += int(yDistanceToTarget) / 4
+		duck.X += int(xDistanceToTarget) / 8
+		duck.Y += int(yDistanceToTarget) / 8
 	} else if duck.isWalking {
 		duck.isFacingRight = ((duck.waitTime % 2) == 0)
 		if (duck.isFacingRight) {
@@ -104,6 +108,7 @@ func (duck *Duck) Move() {
 
 func (duck *Duck) Draw(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
+
 	if duck.isFacingRight {
 		op.GeoM.Scale(float64(duckScale), float64(duckScale))
 	} else {
@@ -113,7 +118,9 @@ func (duck *Duck) Draw(screen *ebiten.Image) {
 	}
 	op.GeoM.Translate(float64(duck.X), float64(duck.Y))
 
-	if duck.isHeld {
+	if duck.isSleeping {
+		screen.DrawImage(duck.Assets["duck_sleeping"], op)
+	} else if duck.isHeld {
 		screen.DrawImage(duck.Assets["duck"], op)
 	} else if duck.isWalking {
 		DrawSpriteFrame(screen, duck.Assets["duck_walk"], 30, 30, (duck.Game.frame/7)%4, op)
