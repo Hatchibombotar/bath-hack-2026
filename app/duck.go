@@ -37,7 +37,21 @@ func (duck *Duck) Init() {
 	duck.Assets = make(map[string]*ebiten.Image)
 	duck.Skins = []string{"duck_bathHack", "duck_green"}
 	duck.Name = "big stan"
-	duck.NextSkin()
+	duck.SetSkin("duck_bathHack")
+}
+
+func (duck *Duck) SetSkin(skinName string) {
+	for i, name := range duck.Skins {
+		if name == skinName {
+			duck.Skin = i
+			duck.Assets["duck"] = LoadImageFromPath(fmt.Sprintf("assets/%s/duck.png", skinName))
+			duck.Assets["duck_walk"] = LoadImageFromPath(fmt.Sprintf("assets/%s/duck_walk.png", skinName))
+			duck.Assets["duck_sitting"] = LoadImageFromPath(fmt.Sprintf("assets/%s/duck_sitting.png", skinName))
+			duck.Assets["duck_sleeping"] = LoadImageFromPath(fmt.Sprintf("assets/%s/duck_sleeping.png", skinName))
+			duck.Assets["duck_flying"] = LoadImageFromPath(fmt.Sprintf("assets/%s/duck_flying.png", skinName))
+			return
+		}
+	}
 }
 
 func (duck *Duck) NextSkin() {
