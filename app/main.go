@@ -254,9 +254,11 @@ func main() {
 
 	nestX, nestY := getNestPosition(0, game)
 	duck := &Duck{
-		Game: game,
-		X:    nestX,
-		Y:    nestY,
+		Game:  game,
+		X:     nestX,
+		Y:     nestY,
+		nestX: nestX,
+		nestY: nestY,
 	}
 
 	duck.Init()
