@@ -9,6 +9,20 @@ func (g *Game) SendMessage(message []byte) {
 	g.sendCh <- message
 }
 
+func (g *Game) SendDuckInfo() {
+	data := &VisiblePlayerDataAction{Action: "update_info", PlayerData: &VisiblePlayerData{
+		DuckName: g.duck.Name,
+		DuckSkin: g.duck.GetSkin(),
+	}}
+
+	message, err := json.Marshal(data)
+	if err != nil {
+		return
+	}
+
+	g.SendMessage(message)
+}
+
 // Runs before update
 func (g *Game) HandleMessage(message []byte) error {
 	action := &GenericAction{}
@@ -34,7 +48,7 @@ func (g *Game) HandleMessage(message []byte) error {
 		if err != nil {
 			return err
 		}
-		g.otherPlayerData[action.PlayerId] = &action.PlayerData
+		g.otherPlayerData[action.PlayerId] = action.PlayerData
 	case "working_state":
 		action := &VisiblePlayerDataAction{}
 		err := json.Unmarshal(message, action)
@@ -48,7 +62,7 @@ func (g *Game) HandleMessage(message []byte) error {
 		if err != nil {
 			return err
 		}
-		g.otherPlayerData[action.PlayerId] = &action.PlayerData
+		g.otherPlayerData[action.PlayerId] = action.PlayerData
 	case "set_player":
 		action := &PlayerData{}
 		err := json.Unmarshal(message, action)

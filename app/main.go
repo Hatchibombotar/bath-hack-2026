@@ -61,10 +61,20 @@ type Game struct {
 	State ServerState
 
 	otherPlayerData map[int]*VisiblePlayerData
+	otherPlayers    map[int]*Duck
 }
 
 // Update processes incoming websocket messages (non-blocking).
 func (g *Game) Update() error {
+	for playerId, player := range g.otherPlayerData {
+		_, exists := g.otherPlayers[playerId]
+		if !exists {
+			g.otherPlayers[playerId] = &Duck{
+				Name: player.DuckName,
+			}
+		}
+		g.otherPlayers[playerId].SetSkin(player.DuckSkin)
+	}
 	select {
 	case m := <-g.msgCh:
 		// handle message: update game state based on m
@@ -148,6 +158,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	g.duck.Draw(screen)
 
+	for _, duck := range g.otherPlayers {
+		duck.Draw(screen)
+	}
+
 	i = 1
 	for range g.otherPlayerData {
 		op := &ebiten.DrawImageOptions{}
@@ -194,6 +208,7 @@ func main() {
 	game.timerLength = 60
 	game.isStartingUIOpen = true
 	game.otherPlayerData = make(map[int]*VisiblePlayerData)
+	game.otherPlayers = make(map[int]*Duck)
 
 	// start websocket client goroutine
 	go runWebSocketClient(ctx, "ws://localhost:8080/", msgCh, sendCh, game)

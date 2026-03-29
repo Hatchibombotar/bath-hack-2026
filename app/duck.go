@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"math/rand/v2"
 
@@ -57,6 +56,10 @@ func (duck *Duck) SetSkin(skinName string) {
 	}
 }
 
+func (duck *Duck) GetSkin() string {
+	return duck.Skins[duck.Skin]
+}
+
 func (duck *Duck) NextSkin() {
 	duck.Skin += 1
 	duck.Skin = duck.Skin % len(duck.Skins)
@@ -67,12 +70,8 @@ func (duck *Duck) NextSkin() {
 	duck.Assets["duck_sitting"] = LoadImageFromPath(fmt.Sprintf("assets/%s/duck_sitting.png", newSkin))
 	duck.Assets["duck_sleeping"] = LoadImageFromPath(fmt.Sprintf("assets/%s/duck_sleeping.png", newSkin))
 	duck.Assets["duck_flying"] = LoadImageFromPath(fmt.Sprintf("assets/%s/duck_flying.png", newSkin))
-	fmt.Println(len(duck.Game.otherPlayerData), duck.Game.otherPlayerData)
-	message, err := json.Marshal(&VisiblePlayerDataAction{Action: "duck_customisation", PlayerId: duck.PlayerId, PlayerData: *duck.Game.otherPlayerData[duck.PlayerId]})
-	fmt.Println("SENDING MESSAGE")
-	if err == nil {
-		duck.Game.SendMessage(message)
-	}
+
+	duck.Game.SendDuckInfo()
 }
 
 func (duck *Duck) Update() {
