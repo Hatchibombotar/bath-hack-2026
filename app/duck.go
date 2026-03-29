@@ -67,7 +67,6 @@ func (duck *Duck) Update() {
 	)
 
 	if duck.isSleeping {
-		fmt.Println("zzz")
 		duck.isWalking = false
 	} else if duck.isHeld {
 		duck.isFacingRight = (duck.targetX - duck.X) < 0
