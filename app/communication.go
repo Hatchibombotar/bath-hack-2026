@@ -34,43 +34,29 @@ func (g *Game) HandleMessage(message []byte) error {
 	actionName := action.Action
 	// process message
 	switch actionName {
-	case "message_friend":
-		action := &MessageFriendAction{}
-		//put message into action's struct
+	case "player_update":
+		action := &VisiblePlayerDataAction{}
 		err := json.Unmarshal(message, action)
 		if err != nil {
 			return err
 		}
+		g.otherPlayerData[action.PlayerId] = action.PlayerData
 
-	case "duck_customisation":
-		action := &VisiblePlayerDataAction{}
-		err := json.Unmarshal(message, action)
-		if err != nil {
-			return err
+		playerIndex := indexOfPlayer(g, action.PlayerId)
+		g.otherPlayers[action.PlayerId] = &Duck{
+			isOtherDuck: true,
+			X:           100,
+			Y:           100,
+			nestY:       300,
+			nestX:       -playerIndex * 40,
+			Game:        g,
 		}
-		g.otherPlayerData[action.PlayerId] = action.PlayerData
-	case "working_state":
-		action := &VisiblePlayerDataAction{}
-		err := json.Unmarshal(message, action)
-		if err != nil {
-			return err
-		}
-		g.otherPlayerData[action.PlayerId].IsWorking = action.PlayerData.IsWorking
-	case "new_player":
-		action := &VisiblePlayerDataAction{}
-		err := json.Unmarshal(message, action)
-		if err != nil {
-			return err
-		}
-		g.otherPlayerData[action.PlayerId] = action.PlayerData
-	case "set_player":
-		action := &PlayerData{}
-		err := json.Unmarshal(message, action)
-		if err != nil {
-			return err
-		}
-		g.duck.PlayerId = action.PlayerId
-		//g.otherPlayerData[g.duck.PlayerId] = &VisiblePlayerData{DuckName: g.duck.Name, IsWorking: g.duck.isSleeping, DuckSkin: g.du}
+		g.otherPlayers[action.PlayerId].Init()
+
+		g.otherPlayers[action.PlayerId].Name = action.PlayerData.DuckName
+		g.otherPlayers[action.PlayerId].SetSkin(action.PlayerData.DuckSkin)
+		g.otherPlayers[action.PlayerId].isSleeping = action.PlayerData.IsWorking
+
 	}
 
 	return nil

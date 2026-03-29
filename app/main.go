@@ -83,18 +83,9 @@ func indexOfPlayer(g *Game, id int) int {
 // Update processes incoming websocket messages (non-blocking).
 func (g *Game) Update() error {
 	for playerId, player := range g.otherPlayerData {
-		playerIndex := indexOfPlayer(g, playerId)
 		_, exists := g.otherPlayers[playerId]
 		if !exists {
-			g.otherPlayers[playerId] = &Duck{
-				isOtherDuck: true,
-				X:           100,
-				Y:           100,
-				nestY:       300,
-				nestX:       -playerIndex * 40,
-				Game:        g,
-			}
-			g.otherPlayers[playerId].Init()
+			panic("no duck!")
 		}
 		g.otherPlayers[playerId].Name = player.DuckName
 		g.otherPlayers[playerId].SetSkin(player.DuckSkin)
@@ -165,24 +156,24 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// }
 
 	i := 1
-	for _, playerData := range g.otherPlayerData {
+	for range g.otherPlayerData {
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Scale(float64(duckScale), float64(duckScale))
 		// op.GeoM.Translate(100, 100)
 		op.GeoM.Translate(
 			float64(screen.Bounds().Size().X)-float64(nestSpriteBack.Bounds().Size().X*duckScale)-float64(nestSpriteBack.Bounds().Size().X*duckScale*i),
-			float64(screen.Bounds().Size().Y)-float64(nestSpriteBack.Bounds().Size().Y*duckScale)-25,
+			float64(screen.Bounds().Size().Y)-float64(nestSpriteBack.Bounds().Size().Y*duckScale)-42,
 		)
 		screen.DrawImage(nestSpriteBack, op)
 
-		op = &ebiten.DrawImageOptions{}
-		op.GeoM.Scale(float64(duckScale), float64(duckScale))
-		// op.GeoM.Translate(100, 100)
-		op.GeoM.Translate(
-			float64(screen.Bounds().Size().X)-float64(nestSpriteBack.Bounds().Size().X*duckScale)-float64(nestSpriteBack.Bounds().Size().X*duckScale*i)-10,
-			float64(screen.Bounds().Size().Y)-float64(nestSpriteBack.Bounds().Size().Y*duckScale)-45,
-		)
-		screen.DrawImage(sittingAssets[playerData.DuckSkin], op)
+		// op = &ebiten.DrawImageOptions{}
+		// op.GeoM.Scale(float64(duckScale), float64(duckScale))
+		// // op.GeoM.Translate(100, 100)
+		// op.GeoM.Translate(
+		// 	float64(screen.Bounds().Size().X)-float64(nestSpriteBack.Bounds().Size().X*duckScale)-float64(nestSpriteBack.Bounds().Size().X*duckScale*i)-10,
+		// 	float64(screen.Bounds().Size().Y)-float64(nestSpriteBack.Bounds().Size().Y*duckScale)-45,
+		// )
+		// screen.DrawImage(sittingAssets[playerData.DuckSkin], op)
 		i++
 	}
 
@@ -199,7 +190,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		// op.GeoM.Translate(100, 100)
 		op.GeoM.Translate(
 			float64(screen.Bounds().Size().X)-float64(nestSpriteFront.Bounds().Size().X*duckScale)-float64(nestSpriteFront.Bounds().Size().X*duckScale*i),
-			float64(screen.Bounds().Size().Y)-float64(nestSpriteFront.Bounds().Size().Y*duckScale)-25,
+			float64(screen.Bounds().Size().Y)-float64(nestSpriteFront.Bounds().Size().Y*duckScale)-42,
 		)
 		screen.DrawImage(nestSpriteFront, op)
 		i++

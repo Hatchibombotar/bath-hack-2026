@@ -85,7 +85,7 @@ func updateAllDuckData() {
 			if player == playerToBeSentTo {
 				continue
 			}
-			data := &VisiblePlayerDataAction{Action: "new_player", PlayerId: player.PlayerId, PlayerData: player.visiblePlayerData}
+			data := &VisiblePlayerDataAction{Action: "player_update", PlayerId: player.PlayerId, PlayerData: player.visiblePlayerData}
 
 			message, err := json.Marshal(data)
 			if err != nil {
