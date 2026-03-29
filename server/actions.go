@@ -19,3 +19,8 @@ type VisiblePlayerDataAction struct {
 	PlayerId   int                `json:"player"`
 	PlayerData *VisiblePlayerData `json:"visible_player_data"`
 }
+
+type UpdateVisiblePlayerDataAction struct {
+	Action     string             `json:"action"`
+	PlayerData *VisiblePlayerData `json:"visible_player_data"`
+}
