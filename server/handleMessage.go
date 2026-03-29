@@ -23,6 +23,14 @@ func handleMessage(player *Player, message []byte) error {
 		action.PlayerId = player.PlayerId
 		player.visiblePlayerData = action.PlayerData
 		updateAllDuckData()
+	case "update_info":
+		action := &VisiblePlayerDataAction{}
+		err = json.Unmarshal(message, action)
+		if err != nil {
+			return err
+		}
+		player.visiblePlayerData = action.PlayerData
+		updateAllDuckData()
 	}
 
 	return nil
