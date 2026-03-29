@@ -22,11 +22,14 @@ type Duck struct {
 	Game             *Game
 	nestX, nestY     int
 
-	isHovered     bool //if mouse intersecting bounding box of image
-	isSleeping    bool //true if in a sleeping state (in a study session)
-	isHeld        bool //true if currently being dragged by mouse
-	isWalking     bool
-	isFlying      bool
+	isHovered  bool //if mouse intersecting bounding box of image
+	isSleeping bool //true if in a sleeping state (in a study session)
+	isHeld     bool //true if currently being dragged by mouse
+
+	isMoving  bool
+	isWalking bool
+	isFlying  bool
+
 	isFacingRight bool //true if facing right, false if left
 	takeBreak     bool
 
@@ -93,7 +96,7 @@ func (duck *Duck) Update() {
 		duckWidth*duckScale,
 	)
 
-	if duck.isHeld || duck.isFlying {
+	if duck.isHeld || duck.isMoving {
 		duck.isFacingRight = (duck.targetX - duck.X) < 0
 	}
 
@@ -116,12 +119,24 @@ func (duck *Duck) Update() {
 		duck.isFlying = false
 	} else if g.frame-duck.lastTimestamp > duck.waitTime {
 		duck.takeBreak = !duck.takeBreak
-		duck.targetX = duck.X + rand.IntN(1000) - 500
-		duck.targetY = duck.Y + rand.IntN(1000) - 500
-		if duck.takeBreak {
-			duck.isWalking = false
+		duck.isMoving = !duck.isMoving
+		maxX, maxY := g.ScreenSize()
+		if duck.isMoving {
+			duck.targetX = rand.IntN(maxX)
+			if rand.IntN(2) != 1 {
+				duck.isFlying = true
+				duck.isWalking = false
+				duck.targetY = rand.IntN(maxY)
+			} else {
+				duck.isWalking = true
+				duck.isFlying = false
+				duck.targetY = duck.Y
+			}
+		} else {
 			duck.isFlying = false
+			duck.isWalking = false
 		}
+
 		duck.lastTimestamp = g.frame
 		duck.waitTime = rand.IntN(400) + 100
 	}
@@ -137,24 +152,25 @@ func (duck *Duck) Move() {
 
 		duck.X += int(xDistanceToTarget) / 8
 		duck.Y += int(yDistanceToTarget) / 8
-	} else if !duck.isSleeping && !duck.takeBreak {
-		duck.isFlying = ((duck.waitTime % 4) >= 2) // ratio of last nums represents probability^-1
-		//goingUp := ((duck.waitTime % 8) >= 4)
-		if duck.isFlying {
-			duck.isWalking = false
-			xDistanceToTarget := float64(duck.targetX - duck.X)
-			yDistanceToTarget := float64(duck.targetY - duck.Y)
-
+	} else if duck.isMoving {
+		xDistanceToTarget := float64(duck.targetX - duck.X)
+		yDistanceToTarget := float64(duck.targetY - duck.Y)
+		if duck.isWalking {
+			if duck.targetX > duck.X {
+				duck.X += 1
+			} else {
+				duck.X -= 1
+			}
+		} else if duck.isFlying {
 			duck.X += int(xDistanceToTarget) / 80
 			duck.Y += int(yDistanceToTarget) / 80
-		} else {
-			duck.isWalking = true
-			duck.isFacingRight = ((duck.waitTime % 2) == 0)
-			if duck.isFacingRight {
-				duck.X -= 1
-			} else {
-				duck.X += 1
-			}
+		}
+		if xDistanceToTarget < 3 && yDistanceToTarget < 3 {
+			duck.isMoving = false
+			duck.isFlying = false
+			duck.isWalking = false
+			duck.lastTimestamp = duck.Game.frame
+			duck.waitTime = rand.IntN(400) + 100
 		}
 	}
 }
