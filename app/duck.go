@@ -90,6 +90,8 @@ func (duck *Duck) Update() {
 
 	g := duck.Game
 
+	duck.isAtNest = (float64(duck.nestX + duck.nestY) - duck.X - duck.Y) < 6
+
 	duck.isHovered = isPointInRect(
 		g.cursorX, g.cursorY,
 		int(g.duck.X), int(g.duck.Y),
@@ -147,8 +149,10 @@ func (duck *Duck) Move() {
 		xDistanceToTarget := float64(duck.nestX) - duck.X
 		yDistanceToTarget := float64(duck.nestY) - duck.Y
 
-		duck.X += float64(xDistanceToTarget) / 100
-		duck.Y += float64(yDistanceToTarget) / 100
+		duck.X += float64(xDistanceToTarget) / 30
+		duck.Y += float64(yDistanceToTarget) / 30
+
+		duck.isFacingRight = (float64(duck.nestX) - duck.X) < 0 
 
 		//fmt.Println(xDistanceToTarget + yDistanceToTarget)
 	} else if duck.isHeld {
