@@ -50,9 +50,9 @@ func (g *Game) HandleMessage(message []byte) error {
 		if !exists {
 			g.otherPlayers[action.PlayerId] = &Duck{
 				isOtherDuck: true,
-				X:           float64(nestX),
+				X:           float64(nestX) + 6,
 				Y:           float64(nestY),
-				nestX:       nestX,
+				nestX:       nestX + 6,
 				nestY:       nestY,
 				Game:        g,
 			}
