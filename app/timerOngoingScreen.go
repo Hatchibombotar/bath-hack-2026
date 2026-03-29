@@ -45,8 +45,6 @@ func UpdateTimerOngoingUIScreen(g *Game) {
 			g.State = TimerSettingsState
 		}
 	}
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButton0) {
-	}
 
 	if g.isTimerRunning {
 		g.timeRemainingOnTimer = time.Duration(g.timerDuration) - time.Since(g.timerStartTime)
