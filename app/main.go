@@ -149,6 +149,14 @@ func (g *Game) Update() error {
 	return nil
 }
 
+func getNestPosition(i int, g *Game) (int, int) {
+	w, h := g.ScreenSize()
+	x := float64(w) - float64(nestSpriteBack.Bounds().Size().X*duckScale) - float64(nestSpriteBack.Bounds().Size().X*duckScale*i)
+	y := float64(h) - float64(nestSpriteBack.Bounds().Size().Y*duckScale) - 42
+
+	return int(x), int(y)
+}
+
 // Draw renders a simple message count for demonstration.
 func (g *Game) Draw(screen *ebiten.Image) {
 	// if ebiten.IsKeyPressed(ebiten.KeySpace) {
@@ -160,9 +168,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Scale(float64(duckScale), float64(duckScale))
 		// op.GeoM.Translate(100, 100)
+		X, Y := getNestPosition(i, g)
 		op.GeoM.Translate(
-			float64(screen.Bounds().Size().X)-float64(nestSpriteBack.Bounds().Size().X*duckScale)-float64(nestSpriteBack.Bounds().Size().X*duckScale*i),
-			float64(screen.Bounds().Size().Y)-float64(nestSpriteBack.Bounds().Size().Y*duckScale)-42,
+			float64(X), float64(Y),
 		)
 		screen.DrawImage(nestSpriteBack, op)
 
@@ -188,9 +196,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Scale(float64(duckScale), float64(duckScale))
 		// op.GeoM.Translate(100, 100)
+		X, Y := getNestPosition(i, g)
 		op.GeoM.Translate(
-			float64(screen.Bounds().Size().X)-float64(nestSpriteFront.Bounds().Size().X*duckScale)-float64(nestSpriteFront.Bounds().Size().X*duckScale*i),
-			float64(screen.Bounds().Size().Y)-float64(nestSpriteFront.Bounds().Size().Y*duckScale)-42,
+			float64(X), float64(Y),
 		)
 		screen.DrawImage(nestSpriteFront, op)
 		i++
@@ -244,10 +252,11 @@ func main() {
 	ebiten.SetWindowMousePassthrough(true)
 	ebiten.SetWindowPosition(0, 0)
 
+	nestX, nestY := getNestPosition(0, game)
 	duck := &Duck{
 		Game: game,
-		X:    200,
-		Y:    200,
+		X:    nestX,
+		Y:    nestY,
 	}
 
 	duck.Init()

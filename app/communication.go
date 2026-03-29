@@ -44,12 +44,14 @@ func (g *Game) HandleMessage(message []byte) error {
 		g.otherPlayerData[action.PlayerId] = action.PlayerData
 
 		playerIndex := indexOfPlayer(g, action.PlayerId)
+		nestX, nestY := getNestPosition(1+playerIndex, g)
+
 		g.otherPlayers[action.PlayerId] = &Duck{
 			isOtherDuck: true,
 			X:           100,
 			Y:           100,
-			nestY:       300,
-			nestX:       -playerIndex * 40,
+			nestX:       nestX,
+			nestY:       nestY,
 			Game:        g,
 		}
 		g.otherPlayers[action.PlayerId].Init()
