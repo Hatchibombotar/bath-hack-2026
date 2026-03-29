@@ -237,5 +237,5 @@ func (duck *Duck) Draw(screen *ebiten.Image) {
 		screen.DrawImage(duck.Assets["duck_sitting"], op)
 	}
 
-	ebitenutil.DebugPrintAt(screen, duck.Name, int(duck.X), int(duck.Y-20))
+	ebitenutil.DebugPrintAt(screen, duck.Name, int(duck.X+14), int(duck.Y-5))
 }
