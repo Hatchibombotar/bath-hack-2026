@@ -77,10 +77,13 @@ func (duck *Duck) Update() {
 			duck.isHeld = false
 			duck.lastTimestamp = g.frame
 			duck.waitTime = rand.IntN(200) + 50
+			//could make array of motion booleans that can be set to false via one func call to prevent repetition
+			duck.isWalking = false
+			duck.isFlying = false
+			duck.takeBreak = true
 		}
 	} else if duck.isHovered && ebiten.IsMouseButtonPressed(ebiten.MouseButton0) {
 		duck.isHeld = true
-		//could make array of motion booleans that can be set to false via one func call to prevent repetition
 		duck.isWalking = false
 		duck.isFlying = false
 	} else if g.frame-duck.lastTimestamp > duck.waitTime {
@@ -106,7 +109,7 @@ func (duck *Duck) Move() {
 		duck.Y += int(yDistanceToTarget) / 8
 	} else if !duck.isSleeping && !duck.takeBreak {
 		duck.isFacingRight = ((duck.waitTime % 2) == 0)
-		duck.isFlying = ((duck.waitTime % 4) >= 2) // ratio of last nums represents probability
+		duck.isFlying = ((duck.waitTime % 4) >= 2) // ratio of last nums represents probability^-1
 		goingUp := ((duck.waitTime % 8) >= 4)
 		if duck.isFacingRight {
 			duck.X -= 1
