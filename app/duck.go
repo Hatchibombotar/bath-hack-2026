@@ -105,6 +105,7 @@ func (duck *Duck) Update() {
 		}
 
 		if duck.isSleeping {
+			duck.isFacingRight = false
 			duck.isMoving = false
 			duck.isWalking = false
 			duck.isFlying = false
