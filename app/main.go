@@ -17,6 +17,10 @@ var duckScale = 3
 var duckWidth = 22
 
 var nestSprite *ebiten.Image = LoadImageFromPath("assets/nest.png")
+var sittingAssets map[string]*ebiten.Image = map[string]*ebiten.Image{
+	"duck_bathHack": LoadImageFromPath(fmt.Sprintf("assets/%s/duck_sitting.png", "duck_bathHack")),
+	"duck_green":    LoadImageFromPath(fmt.Sprintf("assets/%s/duck_sitting.png", "duck_green")),
+}
 
 type ServerState int
 
@@ -129,6 +133,15 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			float64(screen.Bounds().Size().Y)-float64(nestSprite.Bounds().Size().Y*duckScale)-25,
 		)
 		screen.DrawImage(nestSprite, op)
+
+		op = &ebiten.DrawImageOptions{}
+		op.GeoM.Scale(float64(duckScale), float64(duckScale))
+		// op.GeoM.Translate(100, 100)
+		op.GeoM.Translate(
+			float64(screen.Bounds().Size().X)-float64(nestSprite.Bounds().Size().X*duckScale)-float64(nestSprite.Bounds().Size().X*duckScale*i)-10,
+			float64(screen.Bounds().Size().Y)-float64(nestSprite.Bounds().Size().Y*duckScale)-45,
+		)
+		screen.DrawImage(sittingAssets["duck_green"], op)
 	}
 
 	g.duck.Draw(screen)
