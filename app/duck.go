@@ -30,6 +30,8 @@ type Duck struct {
 	isFacingRight bool //true if facing right, false if left
 	takeBreak     bool
 
+	isOtherDuck bool // true if this is not the client's duck
+
 	lastTimestamp int
 	waitTime      int
 }

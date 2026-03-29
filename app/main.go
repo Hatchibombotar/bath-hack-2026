@@ -62,18 +62,43 @@ type Game struct {
 
 	otherPlayerData map[int]*VisiblePlayerData
 	otherPlayers    map[int]*Duck
+	playerList      []int
+}
+
+func indexOfPlayer(g *Game, id int) int {
+	for i, otherId := range g.playerList {
+		if id == otherId {
+			return i
+		}
+	}
+	g.playerList = append(g.playerList, id)
+	for i, otherId := range g.playerList {
+		if id == otherId {
+			return i
+		}
+	}
+	panic("bad")
 }
 
 // Update processes incoming websocket messages (non-blocking).
 func (g *Game) Update() error {
 	for playerId, player := range g.otherPlayerData {
+		playerIndex := indexOfPlayer(g, playerId)
 		_, exists := g.otherPlayers[playerId]
 		if !exists {
 			g.otherPlayers[playerId] = &Duck{
-				Name: player.DuckName,
+				isOtherDuck: true,
+				X:           100,
+				Y:           100,
+				nestY:       300,
+				nestX:       -playerIndex * 40,
+				Game:        g,
 			}
+			g.otherPlayers[playerId].Init()
 		}
+		g.otherPlayers[playerId].Name = player.DuckName
 		g.otherPlayers[playerId].SetSkin(player.DuckSkin)
+
 	}
 	select {
 	case m := <-g.msgCh:
@@ -96,6 +121,11 @@ func (g *Game) Update() error {
 
 	g.duck.Update()
 	g.duck.Move()
+
+	for _, duck := range g.otherPlayers {
+		duck.Update()
+		duck.Move()
+	}
 
 	if g.duck.isHovered {
 		g.hasHover = true
