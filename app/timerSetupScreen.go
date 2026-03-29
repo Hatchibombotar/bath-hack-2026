@@ -55,6 +55,7 @@ func UpdateTimerInputUIScreen(g *Game) {
 			g.duck.isSleeping = true
 
 			g.timerDuration = time.Duration(g.timerLength) * time.Minute
+			g.SendDuckInfo()
 			g.timeRemainingOnTimer = time.Duration(g.timerLength) * time.Minute
 		}
 	}

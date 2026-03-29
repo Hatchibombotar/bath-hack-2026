@@ -38,16 +38,19 @@ func UpdateTimerOngoingUIScreen(g *Game) {
 			g.isTimerRunning = false
 			g.timerDuration = g.timeRemainingOnTimer
 			g.duck.isSleeping = false
+			g.SendDuckInfo()
 		}
 		if resumeButton.IsHovered(g) && !g.isTimerRunning {
 			g.isTimerRunning = true
 			g.timerStartTime = time.Now()
 			g.duck.isSleeping = true
+			g.SendDuckInfo()
 		}
 		if stopButton.IsHovered(g) {
 			g.State = TimerSettingsState
 			g.isTimerRunning = false
 			g.duck.isSleeping = false
+			g.SendDuckInfo()
 		}
 	}
 
@@ -59,6 +62,7 @@ func UpdateTimerOngoingUIScreen(g *Game) {
 		g.State = TimerSettingsState
 		g.isTimerRunning = false
 		g.duck.isSleeping = false
+		g.SendDuckInfo()
 	}
 }
 
