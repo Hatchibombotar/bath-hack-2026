@@ -11,8 +11,9 @@ func (g *Game) SendMessage(message []byte) {
 
 func (g *Game) SendDuckInfo() {
 	data := &VisiblePlayerDataAction{Action: "update_info", PlayerData: &VisiblePlayerData{
-		DuckName: g.duck.Name,
-		DuckSkin: g.duck.GetSkin(),
+		DuckName:  g.duck.Name,
+		DuckSkin:  g.duck.GetSkin(),
+		IsWorking: g.duck.isSleeping,
 	}}
 
 	message, err := json.Marshal(data)
