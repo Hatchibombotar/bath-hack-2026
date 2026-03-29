@@ -18,21 +18,47 @@ func (g *Game) HandleMessage(message []byte) error {
 	}
 
 	actionName := action.Action
-
-	if actionName == "message_friend" {
+	// process message
+	switch actionName {
+	case "message_friend":
 		action := &MessageFriendAction{}
+		//put message into action's struct
 		err := json.Unmarshal(message, action)
 		if err != nil {
 			return err
 		}
 
-		message, err := json.Marshal(&GenericAction{Action: "blah blah"})
+	case "duck_customisation":
+		action := &VisiblePlayerDataAction{}
+		err := json.Unmarshal(message, action)
 		if err != nil {
 			return err
 		}
-
-		g.sendCh <- message
+		g.otherPlayerData[action.PlayerId] = &action.PlayerData
+	case "working_state":
+		action := &VisiblePlayerDataAction{}
+		err := json.Unmarshal(message, action)
+		if err != nil {
+			return err
+		}
+		g.otherPlayerData[action.PlayerId].IsWorking = action.PlayerData.IsWorking
+	case "new_player":
+		action := &VisiblePlayerDataAction{}
+		err := json.Unmarshal(message, action)
+		if err != nil {
+			return err
+		}
+		g.otherPlayerData[action.PlayerId] = &action.PlayerData
 	}
 
+	return nil
+}
+
+func returnMessage(g *Game, data any) error {
+	message, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	g.SendMessage(message)
 	return nil
 }

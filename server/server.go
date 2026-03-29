@@ -8,6 +8,13 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+type ServerRoom struct {
+	players []*Player
+}
+
+var room *ServerRoom = &ServerRoom{}
+var playerId int = 0
+
 // Upgrader is used to upgrade HTTP connections to WebSocket connections.
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
@@ -24,19 +31,28 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 	defer conn.Close()
 
 	player := &Player{
-		Conn: conn,
+		Conn:     conn,
+		PlayerId: playerId,
+		visiblePlayerData: VisiblePlayerData{
+			DuckName:  "duck",
+			DuckSkin:  "duck_green",
+			IsWorking: false,
+		},
 	}
+	playerId += 1
+	broadcastMessage(VisiblePlayerDataAction{Action: "new_player", PlayerId: player.PlayerId, PlayerData: player.visiblePlayerData})
+	for _, player := range room.players {
+		message, err := json.Marshal(&VisiblePlayerDataAction{Action: "new_player", PlayerData: player.visiblePlayerData})
+		if err != nil {
+			panic(err)
+		}
 
-	message, err := json.Marshal(&GenericAction{Action: "blah blah"})
-	if err != nil {
-		panic(err)
+		err = player.Conn.WriteMessage(websocket.TextMessage, message)
+		if err != nil {
+			panic(err)
+		}
 	}
-
-	err = player.Conn.WriteMessage(websocket.TextMessage, message)
-	if err != nil {
-		panic(err)
-	}
-
+	room.players = append(room.players, player)
 	for {
 		_, message, err := conn.ReadMessage()
 		if err != nil {

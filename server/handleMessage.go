@@ -15,14 +15,41 @@ func handleMessage(player *Player, message []byte) error {
 
 	actionName := action.Action
 
-	if actionName == "message_friend" {
+	switch actionName {
+	case "message_friend":
 		action := &MessageFriendAction{}
 		err := json.Unmarshal(message, action)
 		if err != nil {
 			return err
 		}
+		broadcastMessage(action)
+	case "duck_customisation":
+		action := &VisiblePlayerDataAction{}
+		err = json.Unmarshal(message, action)
+		if err != nil {
+			return err
+		}
+		action.PlayerId = player.PlayerId
+		player.visiblePlayerData.DuckName = action.PlayerData.DuckName
+		player.visiblePlayerData.DuckSkin = action.PlayerData.DuckSkin
+		broadcastMessage(action)
+	case "working_state":
+		action := &VisiblePlayerDataAction{}
+		err = json.Unmarshal(message, action)
+		if err != nil {
+			return err
+		}
+		action.PlayerId = player.PlayerId
+		player.visiblePlayerData.IsWorking = action.PlayerData.IsWorking
+		broadcastMessage(action)
+	}
 
-		message, err := json.Marshal(&GenericAction{Action: "blah blah"})
+	return nil
+}
+
+func broadcastMessage(data any) error {
+	for _, player := range room.players {
+		message, err := json.Marshal(data)
 		if err != nil {
 			return err
 		}
@@ -31,8 +58,6 @@ func handleMessage(player *Player, message []byte) error {
 		if err != nil {
 			return err
 		}
-
 	}
-
 	return nil
 }
